@@ -41,6 +41,7 @@ var gravity;
 var jumpStrength;
 var isJumping = false;
 var waterbottle;
+var mountainrange;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cloud = {
@@ -60,27 +61,14 @@ function setup() {
       scale: random(0.5, 1),
     },
   };
-  mountainrange = {
-    x1: 0,
-    x2: 1200,
-    x3: 2400,
-    x4: 3600,
-    x5: 4800,
-    x6: 6000,
-    x7: 7200,
-  };
-  stumpStart = {
-    s1: 800,
-    s2: 1600,
-    s3: 2400,
-    s3: 3200,
-    s4: 4000,
-    s5: 4800,
-    s6: 5600,
-    s7: 6400,
-    s8: 7200,
-    s9: 8000,
-  };
+  mountainrange = [];
+  for (let i = 0; i < 7; i++) {
+    mountainrange.push(i * 1200);
+  }
+  stumpStart = [];
+  for (let i = 0; i < 9; i++) {
+    stumpStart.push(i * 800);
+  }
   ground = {
     y: (windowHeight * 6) / 8,
     centre: windowWidth / 2,
@@ -88,8 +76,8 @@ function setup() {
   gameChar_x = ground.centre;
   gameChar_y = ground.y;
   gameChar_yvelocity = 0;
-  gravity = 0.4;
-  jumpStrength = -10;
+  gravity = 0.2;
+  jumpStrength = -5;
   waterbottle = {
     x: 1000,
     y: (windowHeight * 6) / 8 - 30,
@@ -98,7 +86,7 @@ function setup() {
 }
 
 function draw() {
-  background(242, 160, 36);
+  background(250, 206, 152);
   worldHeight = 1000;
   worldWidth = 8000;
   noStroke();
@@ -113,7 +101,7 @@ function draw() {
   rect(ground.centre - ground.centre);
   pop();
   //Desert Ground
-  fill(143, 115, 0);
+  fill(237, 201, 138);
   rect(0, ground.y, windowWidth, (windowHeight * 2) / 8); //draw some green ground
 
   //1. a cloud in the sky
@@ -125,194 +113,46 @@ function draw() {
   //2. a mountain in the distance
 
   //... add your code here
-  fill(196, 140, 65);
-  //mountain range 1
-  triangle(
-    mountainrange.x1,
-    ground.y,
-    mountainrange.x1 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x1 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x1 + 150,
-    ground.y,
-    mountainrange.x1 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x1 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x1 + 300,
-    ground.y,
-    mountainrange.x1 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x1 + 600,
-    ground.y,
-  );
-  //mountain range 2
-  triangle(
-    mountainrange.x2,
-    ground.y,
-    mountainrange.x2 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x2 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x2 + 150,
-    ground.y,
-    mountainrange.x2 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x2 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x2 + 300,
-    ground.y,
-    mountainrange.x2 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x2 + 600,
-    ground.y,
-  );
-  //mountain range 3
-  triangle(
-    mountainrange.x3,
-    ground.y,
-    mountainrange.x3 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x3 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x3 + 150,
-    ground.y,
-    mountainrange.x3 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x3 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x3 + 300,
-    ground.y,
-    mountainrange.x3 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x3 + 600,
-    ground.y,
-  );
-  //mountain range 4
-  triangle(
-    mountainrange.x4,
-    ground.y,
-    mountainrange.x4 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x4 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x4 + 150,
-    ground.y,
-    mountainrange.x4 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x4 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x4 + 300,
-    ground.y,
-    mountainrange.x4 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x4 + 600,
-    ground.y,
-  );
-  //mountain range 5
-  triangle(
-    mountainrange.x5,
-    ground.y,
-    mountainrange.x5 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x5 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x5 + 150,
-    ground.y,
-    mountainrange.x5 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x5 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x5 + 300,
-    ground.y,
-    mountainrange.x5 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x5 + 600,
-    ground.y,
-  );
-  //mountain range 6
-  triangle(
-    mountainrange.x6,
-    ground.y,
-    mountainrange.x6 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x6 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x6 + 150,
-    ground.y,
-    mountainrange.x6 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x6 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x6 + 300,
-    ground.y,
-    mountainrange.x6 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x6 + 600,
-    ground.y,
-  );
-  //mountain range 7
-  triangle(
-    mountainrange.x7,
-    ground.y,
-    mountainrange.x7 + 150,
-    (windowHeight * 2) / 8,
-    mountainrange.x7 + 300,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x7 + 150,
-    ground.y,
-    mountainrange.x7 + 300,
-    (windowHeight * 3) / 8,
-    mountainrange.x7 + 450,
-    ground.y,
-  );
-  triangle(
-    mountainrange.x7 + 300,
-    ground.y,
-    mountainrange.x7 + 450,
-    (windowHeight * 2) / 8,
-    mountainrange.x7 + 600,
-    ground.y,
-  );
-  //3. a tree
-  //... add your code here
-  fill(28, 79, 17);
-  rect(stumpStart.s1, ground.y - 80, 20, 80, 90, 90, 0, 0);
-  rect(stumpStart.s1 - 25, ground.y - 45, 25, 15, 0, 0, 0, 90);
-  rect(stumpStart.s1 - 25, ground.y - 90, 15, 45, 90, 90, 0, 0);
-  rect(stumpStart.s1 + 20, ground.y - 60, 20, 15, 0, 0, 90, 0);
-  rect(stumpStart.s1 + 25, ground.y - 100, 15, 50, 90, 90, 0, 0);
+  //mountain range 1-8
+  for (let i = 0; i < 7; i++) {
+    fill(196, 132, 90);
+    triangle(
+      mountainrange[i] + 150,
+      ground.y,
+      mountainrange[i] + 300,
+      (windowHeight * 3) / 8,
+      mountainrange[i] + 450,
+      ground.y,
+    );
+    fill(140, 76, 48);
+    triangle(
+      mountainrange[i],
+      ground.y,
+      mountainrange[i] + 150,
+      (windowHeight * 2) / 8,
+      mountainrange[i] + 300,
+      ground.y,
+    );
+    fill(140, 76, 48);
+    triangle(
+      mountainrange[i] + 300,
+      ground.y,
+      mountainrange[i] + 450,
+      (windowHeight * 2) / 8,
+      mountainrange[i] + 600,
+      ground.y,
+    );
+  }
 
-  noStroke();
-  fill(255);
-  text("tree", 800, 346);
+  //cacti 1-10
+  for (let i = 0; i < 9; i++) {
+    fill(67, 124, 79);
+    rect(stumpStart[i], ground.y - 80, 20, 80, 90, 90, 0, 0);
+    rect(stumpStart[i] - 25, ground.y - 45, 25, 15, 0, 0, 0, 90);
+    rect(stumpStart[i] - 25, ground.y - 90, 15, 45, 90, 90, 0, 0);
+    rect(stumpStart[i] + 20, ground.y - 60, 20, 15, 0, 0, 90, 0);
+    rect(stumpStart[i] + 25, ground.y - 100, 15, 50, 90, 90, 0, 0);
+  }
 
   //4. a canyon
   //NB. the canyon should go from ground-level to the bottom of the screen
@@ -325,7 +165,7 @@ function draw() {
     waterbottle.is_found = true;
   }
   if (waterbottle.is_found == false) {
-    fill(255, 10, 200);
+    fill(0, 200, 255);
     rect(waterbottle.x, waterbottle.y, 10, 20, 90, 90, 10, 10);
     fill(255);
     rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
@@ -334,7 +174,9 @@ function draw() {
   if (waterbottle.is_found == true) {
     fill(0);
     textSize(30);
+    push();
     text("1/10 waterbottles found!", 20, 30);
+    pop();
   }
   //the game character
   if (isLeft && isJumping) {
@@ -377,7 +219,7 @@ function draw() {
       gameChar_y - 57,
     );
     //shoulders left
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 9, gameChar_y - 42, 7, 7);
     //torso
     fill(180, 120, 60);
@@ -397,7 +239,7 @@ function draw() {
     );
 
     //shoulder right
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x + 5, gameChar_y - 45, 7, 7);
     //glasses
     stroke(100);
@@ -457,7 +299,7 @@ function draw() {
     );
 
     // shoulder right
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x + 9, gameChar_y - 42, 7, 7);
 
     // torso
@@ -478,7 +320,7 @@ function draw() {
     );
 
     // shoulder left
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 5, gameChar_y - 45, 7, 7);
 
     // glasses
@@ -535,7 +377,7 @@ function draw() {
       gameChar_y - 27,
     );
     //shoulders left
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 9, gameChar_y - 42, 7, 7);
     //torso
     fill(180, 120, 60);
@@ -555,7 +397,7 @@ function draw() {
     );
 
     //shoulder right
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x + 5, gameChar_y - 45, 7, 7);
     //glasses
     stroke(100);
@@ -613,7 +455,7 @@ function draw() {
     );
 
     // shoulder right
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x + 9, gameChar_y - 42, 7, 7);
 
     // torso
@@ -634,7 +476,7 @@ function draw() {
     );
 
     // shoulder left
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 5, gameChar_y - 45, 7, 7);
 
     // glasses
@@ -667,7 +509,7 @@ function draw() {
     rect(gameChar_x - 15, gameChar_y - 62, 5, 20, 90);
     rect(gameChar_x + 10, gameChar_y - 62, 5, 20, 90);
     //shoulders
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 12, gameChar_y - 42, 7, 7);
     ellipse(gameChar_x + 12, gameChar_y - 42, 7, 7);
     //glasses
@@ -700,7 +542,7 @@ function draw() {
     rect(gameChar_x - 15, gameChar_y - 42, 5, 20, 0, 0, 90, 90);
     rect(gameChar_x + 10, gameChar_y - 42, 5, 20, 0, 0, 90, 90);
     //shoulders
-    fill(137, 112, 255);
+    fill(193, 154, 107);
     ellipse(gameChar_x - 12, gameChar_y - 42, 7, 7);
     ellipse(gameChar_x + 12, gameChar_y - 42, 7, 7);
     //glasses
@@ -777,7 +619,7 @@ function keyReleased() {
   }
 }
 function drawCloud1() {
-  fill(255);
+  fill(255, 250, 240);
   rect(
     cloud.pos1.X + 10 * cloud.pos1.scale,
     cloud.pos1.Y,
@@ -817,7 +659,7 @@ function drawCloud1() {
   }
 }
 function drawCloud2() {
-  fill(255);
+  fill(255, 250, 240);
   rect(
     cloud.pos2.X + 10 * cloud.pos2.scale,
     cloud.pos2.Y,
@@ -857,7 +699,7 @@ function drawCloud2() {
   }
 }
 function drawCloud3() {
-  fill(255);
+  fill(255, 250, 240);
   rect(
     cloud.pos3.X + 10 * cloud.pos3.scale,
     cloud.pos3.Y,
