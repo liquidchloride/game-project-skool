@@ -143,7 +143,7 @@ function draw() {
       ground.y,
     );
   }
-
+  //jo
   //cacti 1-10
   for (let i = 0; i < 9; i++) {
     fill(67, 124, 79);
