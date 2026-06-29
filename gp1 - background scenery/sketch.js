@@ -325,7 +325,7 @@ function draw() {
     waterbottle.is_found = true;
   }
   if (waterbottle.is_found == false) {
-    fill(0, 200, 255);
+    fill(255, 10, 200);
     rect(waterbottle.x, waterbottle.y, 10, 20, 90, 90, 10, 10);
     fill(255);
     rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
