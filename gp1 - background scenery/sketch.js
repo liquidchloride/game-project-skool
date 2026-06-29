@@ -735,9 +735,9 @@ function draw() {
   pop();
 
   if (isRight == true) {
-    gameChar_x += 3;
+    gameChar_x += 5;
   } else if (isLeft == true) {
-    gameChar_x -= 3;
+    gameChar_x -= 5;
   }
 }
 function keyPressed() {
