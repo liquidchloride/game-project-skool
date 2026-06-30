@@ -46,21 +46,26 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   cloud = {
     pos1: {
-      Y: random(10, 250),
-      X: -200,
-      scale: random(0.5, 1),
-    },
-    pos2: {
-      Y: random(10, 250),
-      X: -510,
-      scale: random(0.5, 1),
-    },
-    pos3: {
-      Y: random(10, 250),
-      X: -810,
+      x: -200 - random(0, 600),
+      y: random(10, 250),
       scale: random(0.5, 1),
     },
   };
+  cloudArray = [];
+  for (let i = 0; i < 6; i++) {
+    cloud = {
+      pos: {
+        X: -200 - random(0, 600),
+        Y: random(10, 250),
+        scale: random(0.5, 1),
+      },
+      speed: random(1, 4),
+      colour: random(150, 255),
+    };
+    cloudArray.push(cloud);
+  }
+
+  console.log(cloudArray);
   mountainrange = [];
   for (let i = 0; i < 7; i++) {
     mountainrange.push(i * 1200);
@@ -79,8 +84,8 @@ function setup() {
   gravity = 0.2;
   jumpStrength = -5;
   waterbottle = {
-    x: 1000,
-    y: (windowHeight * 6) / 8 - 30,
+    X: 1000,
+    Y: (windowHeight * 6) / 8 - 30,
     is_found: false,
   };
 }
@@ -104,12 +109,43 @@ function draw() {
   fill(237, 201, 138);
   rect(0, ground.y, windowWidth, (windowHeight * 2) / 8); //draw some green ground
 
-  //1. a cloud in the sky
-  //... add your code here
-  drawCloud1();
-  drawCloud2();
-  drawCloud3();
-
+  //Clouds
+  for (let i = 0; i < cloudArray.length; i++) {
+    fill(cloudArray[i].colour);
+    rect(
+      cloudArray[i].pos.X + 10 * cloudArray[i].pos.scale,
+      cloudArray[i].pos.Y,
+      180 * cloudArray[i].pos.scale,
+      50 * cloudArray[i].pos.scale,
+    );
+    ellipse(
+      cloudArray[i].pos.X + 10 * cloudArray[i].pos.scale,
+      cloudArray[i].pos.Y,
+      100 * cloudArray[i].pos.scale,
+      100 * cloudArray[i].pos.scale,
+    );
+    ellipse(
+      cloudArray[i].pos.X + 100 * cloudArray[i].pos.scale,
+      cloudArray[i].pos.Y,
+      100 * cloudArray[i].pos.scale,
+      100 * cloudArray[i].pos.scale,
+    );
+    ellipse(
+      cloudArray[i].pos.X + 190 * cloudArray[i].pos.scale,
+      cloudArray[i].pos.Y,
+      100 * cloudArray[i].pos.scale,
+      100 * cloudArray[i].pos.scale,
+    );
+    if (cloudArray[i].pos.X > -200 && cloudArray[i].pos.X < windowWidth) {
+      cloudArray[i].pos.X += cloudArray[i].speed;
+      //console.log(cloudArray[i]_posX);
+    } else {
+      cloudArray[i].pos.Y = random(10, 250);
+      cloudArray[i].pos.scale = random(0.5, 1);
+      cloudArray[i].pos.X = -199;
+      //console.log(cloudArray[i]_posY);
+    }
+  }
   //2. a mountain in the distance
 
   //... add your code here
@@ -616,125 +652,5 @@ function keyReleased() {
   } else if (keyCode == 65) {
     console.log("stop walking left");
     isLeft = false;
-  }
-}
-function drawCloud1() {
-  fill(255, 250, 240);
-  rect(
-    cloud.pos1.X + 10 * cloud.pos1.scale,
-    cloud.pos1.Y,
-    180 * cloud.pos1.scale,
-    50 * cloud.pos1.scale,
-  );
-  ellipse(
-    cloud.pos1.X + 10 * cloud.pos1.scale,
-    cloud.pos1.Y,
-    100 * cloud.pos1.scale,
-    100 * cloud.pos1.scale,
-  );
-  ellipse(
-    cloud.pos1.X + 100 * cloud.pos1.scale,
-    cloud.pos1.Y,
-    100 * cloud.pos1.scale,
-    100 * cloud.pos1.scale,
-  );
-  ellipse(
-    cloud.pos1.X + 190 * cloud.pos1.scale,
-    cloud.pos1.Y,
-    100 * cloud.pos1.scale,
-    100 * cloud.pos1.scale,
-  );
-  noStroke();
-  fill(255);
-  text("cloud", 200, 100);
-
-  if (cloud.pos1.X > -200 && cloud.pos1.X < windowWidth) {
-    cloud.pos1.X += 2;
-    //console.log(cloud_posX);
-  } else {
-    cloud.pos1.Y = random(10, 250);
-    cloud.pos1.scale = random(0.5, 1);
-    cloud.pos1.X = -199;
-    //console.log(cloud_posY);
-  }
-}
-function drawCloud2() {
-  fill(255, 250, 240);
-  rect(
-    cloud.pos2.X + 10 * cloud.pos2.scale,
-    cloud.pos2.Y,
-    180 * cloud.pos2.scale,
-    50 * cloud.pos2.scale,
-  );
-  ellipse(
-    cloud.pos2.X + 10 * cloud.pos2.scale,
-    cloud.pos2.Y,
-    100 * cloud.pos2.scale,
-    100 * cloud.pos2.scale,
-  );
-  ellipse(
-    cloud.pos2.X + 100 * cloud.pos2.scale,
-    cloud.pos2.Y,
-    100 * cloud.pos2.scale,
-    100 * cloud.pos2.scale,
-  );
-  ellipse(
-    cloud.pos2.X + 190 * cloud.pos2.scale,
-    cloud.pos2.Y,
-    100 * cloud.pos2.scale,
-    100 * cloud.pos2.scale,
-  );
-  noStroke();
-  fill(255);
-  text("cloud", 200, 100);
-
-  if (cloud.pos2.X > -200 && cloud.pos2.X < windowWidth) {
-    cloud.pos2.X += 1;
-    //console.log(cloud_posX);
-  } else {
-    cloud.pos2.Y = random(10, 250);
-    cloud.pos2.scale = random(0.5, 1);
-    cloud.pos2.X = -199;
-    //console.log(cloud_posY);
-  }
-}
-function drawCloud3() {
-  fill(255, 250, 240);
-  rect(
-    cloud.pos3.X + 10 * cloud.pos3.scale,
-    cloud.pos3.Y,
-    180 * cloud.pos3.scale,
-    50 * cloud.pos3.scale,
-  );
-  ellipse(
-    cloud.pos3.X + 10 * cloud.pos3.scale,
-    cloud.pos3.Y,
-    100 * cloud.pos3.scale,
-    100 * cloud.pos3.scale,
-  );
-  ellipse(
-    cloud.pos3.X + 100 * cloud.pos3.scale,
-    cloud.pos3.Y,
-    100 * cloud.pos3.scale,
-    100 * cloud.pos3.scale,
-  );
-  ellipse(
-    cloud.pos3.X + 190 * cloud.pos3.scale,
-    cloud.pos3.Y,
-    100 * cloud.pos3.scale,
-    100 * cloud.pos3.scale,
-  );
-  noStroke();
-  fill(255);
-  text("cloud", 200, 100);
-
-  if (cloud.pos3.X > -200 && cloud.pos3.X < windowWidth) {
-    cloud.pos3.X += 3;
-    //console.log(cloud_posX);
-  } else {
-    cloud.pos3.Y = random(10, 250);
-    cloud.pos3.scale = random(0.5, 1);
-    cloud.pos3.X = -199;
-    //console.log(cloud_posY);
   }
 }
