@@ -42,9 +42,11 @@ var jumpStrength;
 var isJumping = false;
 var waterbottle;
 var mountainrange;
-var gameStart = false;
-var gamePause = false;
+var gameState;
 var gameEnd;
+var pitsArray;
+var cloudArray;
+var overPit;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cloud = {
@@ -62,7 +64,7 @@ function setup() {
         Y: random(10, 250),
         scale: random(0.5, 1),
       },
-      speed: random(1, 4),
+      speed: random(0.1, 1),
       colour: random(150, 255),
     };
     cloudArray.push(cloud);
@@ -81,7 +83,16 @@ function setup() {
     y: (windowHeight * 6) / 8,
     centre: windowWidth / 2,
   };
-  gameChar_x = ground.centre;
+  pitsArray = [];
+  for (let i = 1; i < 8; i++) {
+    pits = {
+      x: random(1000, 1500) * i,
+      y: ground.y,
+      width: random(100, 130),
+    };
+    pitsArray.push(pits);
+  }
+  gameChar_x = 0;
   gameChar_y = ground.y;
   gameChar_yvelocity = 0;
   gravity = 0.2;
@@ -91,10 +102,12 @@ function setup() {
     Y: (windowHeight * 6) / 8 - 30,
     is_found: false,
   };
+
+  gameState = "START";
 }
 
 function draw() {
-  if (gameStart == false && gamePause == false) {
+  if (gameState == "START") {
     background(0);
     //stroke(200);
     textSize(150);
@@ -109,7 +122,7 @@ function draw() {
       windowWidth / 2,
       windowHeight / 2 + 400,
     );
-  } else if (gameStart == true && gamePause == false) {
+  } else if (gameState == "PLAY") {
     background(250, 206, 152);
     worldHeight = 1000;
     worldWidth = 8000;
@@ -211,7 +224,22 @@ function draw() {
 
     //4. a canyon
     //NB. the canyon should go from ground-level to the bottom of the screen
-
+    overPit = false;
+    for (let i = 0; i < pitsArray.length; i++) {
+      fill(92, 58, 38);
+      rect(
+        pitsArray[i].x,
+        pitsArray[i].y,
+        pitsArray[i].width,
+        windowHeight - ground.y,
+      );
+      if (
+        gameChar_x > pitsArray[i].x &&
+        gameChar_x < pitsArray[i].x + pitsArray[i].width
+      ) {
+        overPit = true;
+      }
+    }
     //... add your code here
 
     // //5. a collectable token - eg. a jewel, fruit, coins
@@ -392,7 +420,7 @@ function draw() {
       fill(0);
       ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
       ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
-    } else if (isLeft) {
+    } else if (isLeft && !isPlummeting) {
       // add your walking left code
       //head
       fill(237, 201, 175);
@@ -468,7 +496,7 @@ function draw() {
       fill(0);
       ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
       ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
-    } else if (isRight) {
+    } else if (isRight && !isPlummeting) {
       // add your walking right code
       fill(237, 201, 175);
       ellipse(gameChar_x, gameChar_y - 60, 20, 20);
@@ -615,35 +643,70 @@ function draw() {
       ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
       ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
     }
-    if (isJumping) {
+    if (isJumping || isPlummeting) {
       gameChar_y += gameChar_yvelocity;
-      gameChar_yvelocity += gravity; // gravity accelerates the fall
+      gameChar_yvelocity += gravity;
 
       if (gameChar_y >= ground.y) {
-        gameChar_y = ground.y; // land exactly on the ground
-        isJumping = false;
-        gameChar_yvelocity = 0;
+        if (overPit) {
+          isPlummeting = true;
+          isJumping = false;
+        } else {
+          gameChar_y = ground.y;
+          isJumping = false;
+          isPlummeting = false;
+          gameChar_yvelocity = 0;
+        }
       }
+    } else if (overPit) {
+      isPlummeting = true;
+      gameChar_yvelocity = 0;
+    }
+    if (isPlummeting && gameChar_y > windowHeight + 100) {
+      gameState = "GAME OVER";
     }
     push();
+    textSize(20);
+    fill(0);
+    textFont("Papyrus");
+    textAlign(LEFT, LEFT);
+    text("Press ESC key to pause game", 20, 20);
     fill(0);
     noStroke();
     text(mouseX + "," + mouseY, mouseX, mouseY);
     pop();
-
-    if (isRight == true) {
-      gameChar_x += 5;
-    } else if (isLeft == true) {
-      gameChar_x -= 5;
+    if (!isPlummeting) {
+      if (isRight == true) {
+        gameChar_x += 5;
+      } else if (isLeft == true) {
+        gameChar_x -= 5;
+      }
     }
-  } else if (gamePause == true && gameStart == false) {
+  } else if (gameState == "PAUSE") {
     background(100);
-    stroke(200);
+    //stroke(200);
     textSize(150);
     fill(255);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
     text("Riding Paused", windowWidth / 2, windowHeight / 2);
+    textSize(20);
+    text("Press ESC key to continue", windowWidth / 2, windowHeight / 2 + 200);
+  } else if (gameState == "GAME OVER") {
+    background(20);
+    textSize(100);
+    fill(255, 50, 50);
+    textFont("Papyrus");
+    textAlign(CENTER, CENTER);
+    text("GAME OVER", windowWidth / 2, windowHeight / 2);
+    textSize(20);
+    fill(255);
+    text("git gud", windowWidth / 2, windowHeight / 2 - 100);
+    text(
+      "Press spacebar to try again",
+      windowWidth / 2,
+      windowHeight / 2 + 100,
+    );
   }
 }
 function keyPressed() {
@@ -653,28 +716,42 @@ function keyPressed() {
   //open up the console to see how these work
   console.log("keyPressed: " + key);
   console.log("keyPressed: " + keyCode);
-  if (keyCode == 68) {
-    console.log("walking right");
-    isRight = true;
-  } else if (keyCode == 65) {
-    console.log("walking left");
-    isLeft = true;
-  } else if (keyCode == 87) {
-    console.log("jumping");
-    if (!isJumping) {
-      isJumping = true;
-      gameChar_yvelocity = jumpStrength;
+  if (gameState == "START" && keyCode == 32) {
+    //space
+    gameState = "PLAY";
+  }
+
+  if (gameState == "PLAY") {
+    if (keyCode == 68) {
+      console.log("walking right");
+      isRight = true;
+    } else if (keyCode == 65) {
+      console.log("walking left");
+      isLeft = true;
+    } else if (keyCode == 87) {
+      console.log("jumping");
+      if (!isJumping && !isPlummeting) {
+        isJumping = true;
+        gameChar_yvelocity = jumpStrength;
+      }
+    } else if (keyCode == 27) {
+      //escape
+      console.log("triggered");
+      gameState = "PAUSE";
     }
-  }
-  //32 = spacebar
-  if (keyCode == 32) {
-    gameStart = true;
-    console.log("game start true");
-  }
-  //27 = escape
-  if (keyCode == 27) {
-    gamePause = !gamePause;
-    gameStart = !gameStart;
+  } else if (gameState == "PAUSE") {
+    if (keyCode == 27) {
+      gameState = "PLAY";
+    }
+  } else if (gameState == "GAME OVER" && keyCode == 32) {
+    gameChar_x = 0;
+    gameChar_y = ground.y;
+    gameChar_yvelocity = 0;
+    isJumping = false;
+    isPlummeting = false;
+    isLeft = false;
+    isRight = false;
+    gameState = "PLAY";
   }
 }
 
