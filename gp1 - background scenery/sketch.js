@@ -1,26 +1,6 @@
 /*
 
-The Game Project
-
-1 - Background Scenery
-
-Use p5 drawing functions such as rect, ellipse, line, triangle and
-point to draw the scenery as set out in the code comments. The items
-should appear next to the text titles.
-
-Each bit of scenery is worth two marks:
-
-0 marks = not a reasonable attempt
-1 mark = attempted but it's messy or lacks detail
-2 marks = you've used several shape functions to create the scenery
-
-I've given titles and chosen some base colours, but feel free to
-imaginatively modify these and interpret the scenery titles loosely to
-match your game theme.
-
-WARNING: Do not get too carried away. If you're shape takes more than 15 lines of code to draw then you've probably over done it.
-
-
+//ZA GAME JOJECT
 */
 var gameChar_x;
 var gameChar_y;
@@ -40,7 +20,7 @@ var gameChar_yvelocity;
 var gravity;
 var jumpStrength;
 var isJumping = false;
-var waterbottle;
+var waterbottleArray;
 var mountainrange;
 var gameState;
 var gameEnd;
@@ -50,67 +30,85 @@ var overPit;
 var gameCharPOV;
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  cloud = {
-    pos1: {
-      x: -200 - random(0, 600),
-      y: random(10, 250),
-      scale: random(0.5, 1),
-    },
-  };
+  //create array for  10 clouds with randomised y and scale and diffrent starting x
   cloudArray = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 10; i++) {
     cloud = {
       pos: {
         X: -200 - random(0, 600),
         Y: random(10, 250),
         scale: random(0.5, 1),
       },
-      speed: random(0.1, 1),
+      speed: random(0.1, 2),
       colour: random(150, 255),
     };
     cloudArray.push(cloud);
   }
-
-  console.log(cloudArray);
+  //create array for 7 mountian ranges with distance of 1200 between ranges
   mountainrange = [];
   for (let i = 0; i < 7; i++) {
     mountainrange.push(i * 1200);
   }
+  //create array for base of 9 cacti with distance of 800 between ranges
   stumpStart = [];
   for (let i = 0; i < 9; i++) {
     stumpStart.push(i * 800);
   }
+  //create ground object to make code cleaner
   ground = {
     y: (windowHeight * 6) / 8,
     centre: windowWidth / 2,
   };
+  //create array for 8 pits
   pitsArray = [];
   for (let i = 1; i < 8; i++) {
     pits = {
-      x: random(1000, 1500) * i,
-      y: ground.y,
-      width: random(100, 130),
+      x: random(1000, 1500) * i, //randomise x positions but still far apart from each other
+      y: ground.y, //set y position for pits
+      width: random(100, 130), //randomise width for pits
     };
     pitsArray.push(pits);
   }
-  gameChar_x = 0;
-  gameChar_y = ground.y;
-  gameChar_yvelocity = 0;
-  gravity = 0.2;
-  jumpStrength = -5;
-  waterbottle = {
-    x: 1000,
-    y: (windowHeight * 6) / 8 - 30,
-    is_found: false,
-  };
+  gameChar_x = 0; //spawn game character at x=0
+  gameChar_y = ground.y; //spawn game character at y=ground level
+  gameChar_yvelocity = 0; //set velocity as 0 when spawn in
+  gravity = 0.2; //set gravity as 0.2 since in mars setting
+  jumpStrength = -5; //how high game character can jump
+  // waterbottleArray = [];//WIP
+  // for (let i = 1; i < 11; i++) {
+  //   waterbottle = {
+  //     x: 1000 * i + random(1, 100), //waterbottle x pos every 1000px+(1 to 100)
+  //     y: ground.y - 30, //waterbottle abit higher than ground
+  //     is_found: false,
+  //   };
+  //   waterbottleArray.push(waterbottle);
+  // }
 
-  gameState = "START";
+  gameState = "START"; //make game state START by default
 }
 
 function draw() {
   if (gameState == "START") {
-    background(0);
-    //stroke(200);
+    //game
+    noStroke();
+    background(90, 55, 35);
+    fill(255, 60, 0, 80);
+    ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
+    fill(255, 60, 0, 120);
+    ellipse(ground.centre, ground.y, ground.centre + 100, ground.centre + 100);
+    fill(220, 90, 30);
+    ellipse(ground.centre, ground.y, ground.centre, ground.centre);
+    fill(180, 130, 85);
+    rect(
+      0,
+      ground.y - 20,
+      windowWidth,
+      (windowHeight * 2) / 8 + 20,
+      40,
+      40,
+      0,
+      0,
+    );
     textSize(150);
     fill(255);
     textFont("Papyrus");
@@ -143,7 +141,6 @@ function draw() {
     ellipse(ground.centre, ground.y, ground.centre + 100, ground.centre + 100);
     fill(255, 60, 0, 50);
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
-    rect(ground.centre - ground.centre);
     pop();
 
     //Clouds
@@ -253,19 +250,44 @@ function draw() {
       }
     }
     //... add your code here
-
+    //WIP FOR TOKEN
     // //5. a collectable token - eg. a jewel, fruit, coins
-    if (dist(gameChar_x, gameChar_y - 40, waterbottle.x, waterbottle.y) < 20) {
-      console.log("triggered");
-      waterbottle.is_found = true;
-    }
-    if (waterbottle.is_found == false) {
-      fill(0, 200, 255);
-      rect(waterbottle.x, waterbottle.y, 10, 20, 90, 90, 10, 10);
-      fill(255);
-      rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
-      rect(waterbottle.x, waterbottle.y + 5, 10, 5);
-    }
+    //   for (let i = 0; i < waterbottleArray.length; i++) {
+    //     fill(0, 200, 255);
+    //     rect(
+    //       waterbottleArray[i].x,
+    //       waterbottleArray[i].y,
+    //       10,
+    //       20,
+    //       90,
+    //       90,
+    //       10,
+    //       10,
+    //     );
+    //     fill(255);
+    //     rect(
+    //       waterbottleArray[i].x + 2.5,
+    //       waterbottleArray[i].y - 5,
+    //       5,
+    //       5,
+    //       0,
+    //       0,
+    //       50,
+    //       50,
+    //     );
+    //     rect(waterbottleArray[i].x, waterbottleArray[i].y + 5, 10, 5);
+    //   }
+    //   if (dist(gameChar_x, gameChar_y - 40, waterbottle.x, waterbottle.y) < 20) {
+    //     console.log("triggered");
+    //     waterbottle.is_found = true;
+    //   }
+    //   if (waterbottle.is_found == false) {
+    //     fill(0, 200, 255);
+    //     rect(waterbottle.x, waterbottle.y, 10, 20, 90, 90, 10, 10);
+    //     fill(255);
+    //     rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
+    //     rect(waterbottle.x, waterbottle.y + 5, 10, 5);
+    // }
     //the game character
     if (isLeft && isJumping) {
       // add your jumping-left code
@@ -681,15 +703,15 @@ function draw() {
     noStroke();
     text(mouseX + "," + mouseY, mouseX, mouseY);
     pop();
-    if (waterbottle.is_found == true) {
-      push();
-      fill(0);
-      textSize(30);
-      textFont("Papyrus");
-      textAlign(RIGHT, TOP);
-      text("1/10 waterbottles found!", windowWidth - 20, 20);
-      pop();
-    }
+    // if (waterbottle.is_found == true) {
+    //   push();
+    //   fill(0);
+    //   textSize(30);
+    //   textFont("Papyrus");
+    //   textAlign(RIGHT, TOP);
+    //   text("1/10 waterbottles found!", windowWidth - 20, 20);
+    //   pop();
+    // }
     if (!isPlummeting) {
       if (isRight == true) {
         gameChar_x += 5;
