@@ -47,6 +47,7 @@ var gameEnd;
 var pitsArray;
 var cloudArray;
 var overPit;
+var gameCharPOV;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cloud = {
@@ -98,8 +99,8 @@ function setup() {
   gravity = 0.2;
   jumpStrength = -5;
   waterbottle = {
-    X: 1000,
-    Y: (windowHeight * 6) / 8 - 30,
+    x: 1000,
+    y: (windowHeight * 6) / 8 - 30,
     is_found: false,
   };
 
@@ -127,6 +128,13 @@ function draw() {
     worldHeight = 1000;
     worldWidth = 8000;
     noStroke();
+
+    gameCharPOV = constrain(
+      gameChar_x - windowWidth / 2,
+      0,
+      worldWidth - windowWidth,
+    );
+
     //SUN
     push();
     fill(255, 60, 0);
@@ -137,9 +145,6 @@ function draw() {
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
     rect(ground.centre - ground.centre);
     pop();
-    //Desert Ground
-    fill(237, 201, 138);
-    rect(0, ground.y, windowWidth, (windowHeight * 2) / 8); //draw some green ground
 
     //Clouds
     for (let i = 0; i < cloudArray.length; i++) {
@@ -178,6 +183,13 @@ function draw() {
         //console.log(cloudArray[i]_posY);
       }
     }
+    //sidescrolling element
+    push();
+    translate(-gameCharPOV, 0);
+    //Desert Ground
+    fill(237, 201, 138);
+    rect(0, ground.y, worldWidth, (windowHeight * 2) / 8); //draw some green ground
+
     //2. a mountain in the distance
 
     //... add your code here
@@ -253,13 +265,6 @@ function draw() {
       fill(255);
       rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
       rect(waterbottle.x, waterbottle.y + 5, 10, 5);
-    }
-    if (waterbottle.is_found == true) {
-      fill(0);
-      textSize(30);
-      push();
-      text("1/10 waterbottles found!", 20, 30);
-      pop();
     }
     //the game character
     if (isLeft && isJumping) {
@@ -665,6 +670,7 @@ function draw() {
     if (isPlummeting && gameChar_y > windowHeight + 100) {
       gameState = "GAME OVER";
     }
+    pop(); //sidescrolling element end
     push();
     textSize(20);
     fill(0);
@@ -675,6 +681,15 @@ function draw() {
     noStroke();
     text(mouseX + "," + mouseY, mouseX, mouseY);
     pop();
+    if (waterbottle.is_found == true) {
+      push();
+      fill(0);
+      textSize(30);
+      textFont("Papyrus");
+      textAlign(RIGHT, TOP);
+      text("1/10 waterbottles found!", windowWidth - 20, 20);
+      pop();
+    }
     if (!isPlummeting) {
       if (isRight == true) {
         gameChar_x += 5;
@@ -753,6 +768,7 @@ function keyPressed() {
     isRight = false;
     gameState = "PLAY";
   }
+  return false;
 }
 
 function keyReleased() {
