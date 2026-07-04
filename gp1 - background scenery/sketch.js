@@ -21,6 +21,7 @@ var pitsArray;
 var cloudArray;
 var overPit;
 var gameCharPOV;
+var deathalpha;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   //create array for  10 clouds with randomised y and scale and diffrent starting x
@@ -745,6 +746,7 @@ function draw() {
     } //game character falling enough=game over
     if (isPlummeting && gameChar.y > windowHeight + 100) {
       gameState = "GAME OVER";
+      deathalpha = 0;
     }
     pop(); //sidescrolling element end
     //================HUD=======================
@@ -792,18 +794,22 @@ function draw() {
     //====================GAME OVER SCREEN======================================
   } else if (gameState == "GAME OVER") {
     background(20);
-    textSize(100);
-    fill(255, 50, 50);
+    deathalpha += 1;
+    if (deathalpha > 255) {
+      deathalpha = 255;
+    }
+    textSize(500);
+    fill(255, 50, 50, deathalpha);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
-    text("GAME OVER", windowWidth / 2, windowHeight / 2);
+    text("YOU DIED", windowWidth / 2, windowHeight / 2);
     textSize(20);
     fill(255);
-    text("git gud", windowWidth / 2, windowHeight / 2 - 100);
+    text("git gud", windowWidth / 2, windowHeight / 2 - 300);
     text(
       "Press spacebar to try again",
       windowWidth / 2,
-      windowHeight / 2 + 100,
+      windowHeight / 2 + 300,
     );
   }
 }
