@@ -2,28 +2,21 @@
 
 //ZA GAME JOJECT
 */
-var gameChar_x;
-var gameChar_y;
+var gameChar;
 var cloud;
-var canvasX;
-var canvasY;
 var worldWidth;
 var worldHeight;
-var mountainrange;
-var stumpStart;
+var mountainArray;
+var stumpArray;
 var ground;
 var isLeft;
 var isRight;
 var isPlummeting;
-var isJumping;
-var gameChar_yvelocity;
 var gravity;
 var jumpStrength;
 var isJumping = false;
 var waterbottleArray;
-var mountainrange;
 var gameState;
-var gameEnd;
 var pitsArray;
 var cloudArray;
 var overPit;
@@ -44,35 +37,47 @@ function setup() {
     };
     cloudArray.push(cloud);
   }
-  //create array for 7 mountian ranges with distance of 1200 between ranges
-  mountainrange = [];
+  //create array for 7 mountian ranges with random offset and scale
+  mountainArray = [];
   for (let i = 0; i < 7; i++) {
-    mountainrange.push(i * 1200);
+    mountain = {
+      x: i * 1200 + random(100, 200), //spaced out but still random jitter
+      scale: random(0.8, 1.5), //random scale
+    };
+    mountainArray.push(mountain);
   }
-  //create array for base of 9 cacti with distance of 800 between ranges
-  stumpStart = [];
-  for (let i = 0; i < 9; i++) {
-    stumpStart.push(i * 800);
+  //create array for base of 26 cacti with random offset and sclae
+  stumpArray = [];
+  for (let i = 0; i < 26; i++) {
+    stump = {
+      x: i * 300 + random(100, 300), //spaced out but still random jitter
+      scale: random(0.5, 1.5), //random scale
+    };
+    stumpArray.push(stump);
   }
   //create ground object to make code cleaner
   ground = {
-    y: (windowHeight * 6) / 8,
-    centre: windowWidth / 2,
+    y: (windowHeight * 6) / 8, //ground always 6/8 of window height
+    centre: windowWidth / 2, //declared for use for sun refrence
   };
-  //create array for 8 pits
+  //create array for 7 pits
   pitsArray = [];
   for (let i = 1; i < 8; i++) {
     pits = {
-      x: random(1000, 1500) * i, //randomise x positions but still far apart from each other
+      x: random(1000, 1500) * i, //spaced far and scaled with i to prevent overlap
       y: ground.y, //set y position for pits
       width: random(100, 130), //randomise width for pits
     };
     pitsArray.push(pits);
   }
-  gameChar_x = 0; //spawn game character at x=0
-  gameChar_y = ground.y; //spawn game character at y=ground level
-  gameChar_yvelocity = 0; //set velocity as 0 when spawn in
-  gravity = 0.2; //set gravity as 0.2 since in mars setting
+  gameChar = {
+    x: 0, //spawn game character at x=0
+    y: ground.y, //spawn game character at y=ground level
+    velocity: 0, //set velocity as 0 when spawn in
+    speed: 5, //set game character speed
+  };
+
+  gravity = 0.2; //push character down each frame to replicate gravity
   jumpStrength = -5; //how high game character can jump
   // waterbottleArray = [];//WIP
   // for (let i = 1; i < 11; i++) {
@@ -89,15 +94,17 @@ function setup() {
 
 function draw() {
   if (gameState == "START") {
-    //game
+    //=====================================START SCREEN===================================================
     noStroke();
     background(90, 55, 35);
+    //SUN
     fill(255, 60, 0, 80);
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
     fill(255, 60, 0, 120);
     ellipse(ground.centre, ground.y, ground.centre + 100, ground.centre + 100);
     fill(220, 90, 30);
     ellipse(ground.centre, ground.y, ground.centre, ground.centre);
+    //ground
     fill(180, 130, 85);
     rect(
       0,
@@ -109,12 +116,12 @@ function draw() {
       0,
       0,
     );
-    textSize(150);
+    textSize(150); //draw game name
     fill(255);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
     text("Dune Rider", windowWidth / 2, windowHeight / 2);
-    textSize(20);
+    textSize(20); //draw game controls
     text("Press spacebar to START", windowWidth / 2, windowHeight / 2 + 200);
     text(
       "A to move left, D to move right, W to jump up",
@@ -122,18 +129,19 @@ function draw() {
       windowHeight / 2 + 400,
     );
   } else if (gameState == "PLAY") {
-    background(250, 206, 152);
+    //=====================================MAIN GAMEPLAY=======================
+    background(250, 206, 152); //draw world
     worldHeight = 1000;
     worldWidth = 8000;
     noStroke();
-
+    //set camera POV on game char with limits of left and right of world
     gameCharPOV = constrain(
-      gameChar_x - windowWidth / 2,
+      gameChar.x - windowWidth / 2,
       0,
       worldWidth - windowWidth,
     );
 
-    //SUN
+    //SUN(fixed to screen, does not move)
     push();
     fill(255, 60, 0);
     ellipse(ground.centre, ground.y, ground.centre, ground.centre);
@@ -143,7 +151,7 @@ function draw() {
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
     pop();
 
-    //Clouds
+    //CLOUDS(fixed to screen,move independently of camera moving)
     for (let i = 0; i < cloudArray.length; i++) {
       fill(cloudArray[i].colour);
       rect(
@@ -171,68 +179,113 @@ function draw() {
         100 * cloudArray[i].pos.scale,
       );
       if (cloudArray[i].pos.X > -200 && cloudArray[i].pos.X < windowWidth) {
+        //if cloud is within view,keep moving
         cloudArray[i].pos.X += cloudArray[i].speed;
-        //console.log(cloudArray[i]_posX);
       } else {
+        //else rest it with random Y and scale
         cloudArray[i].pos.Y = random(10, 250);
         cloudArray[i].pos.scale = random(0.5, 1);
         cloudArray[i].pos.X = -199;
-        //console.log(cloudArray[i]_posY);
       }
     }
-    //sidescrolling element
+    //sidescrolling element where everything out of push pop is stays  fixed
     push();
     translate(-gameCharPOV, 0);
     //Desert Ground
     fill(237, 201, 138);
     rect(0, ground.y, worldWidth, (windowHeight * 2) / 8); //draw some green ground
 
-    //2. a mountain in the distance
-
-    //... add your code here
-    //mountain range 1-8
+    //================MOUNTAINS======================================================
+    //3 triangles to replicate a mountain range
     for (let i = 0; i < 7; i++) {
       fill(196, 132, 90);
       triangle(
-        mountainrange[i] + 150,
+        mountainArray[i].x + 150 * mountainArray[i].scale,
         ground.y,
-        mountainrange[i] + 300,
-        (windowHeight * 3) / 8,
-        mountainrange[i] + 450,
-        ground.y,
-      );
-      fill(140, 76, 48);
-      triangle(
-        mountainrange[i],
-        ground.y,
-        mountainrange[i] + 150,
-        (windowHeight * 2) / 8,
-        mountainrange[i] + 300,
+        mountainArray[i].x + 300 * mountainArray[i].scale,
+        ground.y - ((windowHeight * 3) / 8) * mountainArray[i].scale,
+        mountainArray[i].x + 450 * mountainArray[i].scale,
         ground.y,
       );
       fill(140, 76, 48);
       triangle(
-        mountainrange[i] + 300,
+        mountainArray[i].x,
         ground.y,
-        mountainrange[i] + 450,
-        (windowHeight * 2) / 8,
-        mountainrange[i] + 600,
+        mountainArray[i].x + 150 * mountainArray[i].scale,
+        ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
+        mountainArray[i].x + 300 * mountainArray[i].scale,
+        ground.y,
+      );
+      fill(140, 76, 48);
+      triangle(
+        mountainArray[i].x + 300 * mountainArray[i].scale,
+        ground.y,
+        mountainArray[i].x + 450 * mountainArray[i].scale,
+        ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
+        mountainArray[i].x + 600 * mountainArray[i].scale,
         ground.y,
       );
     }
     //jo
-    //cacti 1-10
-    for (let i = 0; i < 9; i++) {
+    //==========================CACTI=====================================================
+    //collection of rectangles that make up a cactus
+    for (let i = 0; i < stumpArray.length; i++) {
       fill(67, 124, 79);
-      rect(stumpStart[i], ground.y - 80, 20, 80, 90, 90, 0, 0);
-      rect(stumpStart[i] - 25, ground.y - 45, 25, 15, 0, 0, 0, 90);
-      rect(stumpStart[i] - 25, ground.y - 90, 15, 45, 90, 90, 0, 0);
-      rect(stumpStart[i] + 20, ground.y - 60, 20, 15, 0, 0, 90, 0);
-      rect(stumpStart[i] + 25, ground.y - 100, 15, 50, 90, 90, 0, 0);
+      rect(
+        stumpArray[i].x,
+        ground.y - 80 * stumpArray[i].scale,
+        20 * stumpArray[i].scale,
+        80 * stumpArray[i].scale,
+        90,
+        90,
+        0,
+        0,
+      );
+      rect(
+        stumpArray[i].x - 25 * stumpArray[i].scale,
+        ground.y - 45 * stumpArray[i].scale,
+        25 * stumpArray[i].scale,
+        15 * stumpArray[i].scale,
+        0,
+        0,
+        0,
+        90,
+      );
+      rect(
+        stumpArray[i].x - 25 * stumpArray[i].scale,
+        ground.y - 90 * stumpArray[i].scale,
+        15 * stumpArray[i].scale,
+        45 * stumpArray[i].scale,
+        90,
+        90,
+        0,
+        0,
+      );
+      rect(
+        stumpArray[i].x + 20 * stumpArray[i].scale,
+        ground.y - 60 * stumpArray[i].scale,
+        20 * stumpArray[i].scale,
+        15 * stumpArray[i].scale,
+        0,
+        0,
+        90,
+        0,
+      );
+      rect(
+        stumpArray[i].x + 25 * stumpArray[i].scale,
+        ground.y - 100 * stumpArray[i].scale,
+        15 * stumpArray[i].scale,
+        50 * stumpArray[i].scale,
+        90,
+        90,
+        0,
+        0,
+      );
     }
 
-    //4. a canyon
-    //NB. the canyon should go from ground-level to the bottom of the screen
+    //=========================================PITS=======================================
+    //each pit is drawn from bottom of screen to ground level
+    //overPit is true if game char x is within pit x values
     overPit = false;
     for (let i = 0; i < pitsArray.length; i++) {
       fill(92, 58, 38);
@@ -243,15 +296,13 @@ function draw() {
         windowHeight - ground.y,
       );
       if (
-        gameChar_x > pitsArray[i].x &&
-        gameChar_x < pitsArray[i].x + pitsArray[i].width
+        gameChar.x > pitsArray[i].x &&
+        gameChar.x < pitsArray[i].x + pitsArray[i].width
       ) {
         overPit = true;
       }
     }
-    //... add your code here
     //WIP FOR TOKEN
-    // //5. a collectable token - eg. a jewel, fruit, coins
     //   for (let i = 0; i < waterbottleArray.length; i++) {
     //     fill(0, 200, 255);
     //     rect(
@@ -277,7 +328,7 @@ function draw() {
     //     );
     //     rect(waterbottleArray[i].x, waterbottleArray[i].y + 5, 10, 5);
     //   }
-    //   if (dist(gameChar_x, gameChar_y - 40, waterbottle.x, waterbottle.y) < 20) {
+    //   if (dist(gameChar.x, gameChar.y - 40, waterbottle.x, waterbottle.y) < 20) {
     //     console.log("triggered");
     //     waterbottle.is_found = true;
     //   }
@@ -288,411 +339,416 @@ function draw() {
     //     rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
     //     rect(waterbottle.x, waterbottle.y + 5, 10, 5);
     // }
-    //the game character
+    //====================GAME CHARACTER================================================
+    //6 different states the character can be in depending on which condition is fulfiled
     if (isLeft && isJumping) {
-      // add your jumping-left code
+      //-------------------JUMPING FACING LEFT----------------------------------------------------
       //head
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
       //legs
       fill(140, 120, 90);
       quad(
-        gameChar_x - 8,
-        gameChar_y - 25,
-        gameChar_x - 3,
-        gameChar_y - 25,
-        gameChar_x - 8,
-        gameChar_y,
-        gameChar_x - 13,
-        gameChar_y,
+        gameChar.x - 8,
+        gameChar.y - 25,
+        gameChar.x - 3,
+        gameChar.y - 25,
+        gameChar.x - 8,
+        gameChar.y,
+        gameChar.x - 13,
+        gameChar.y,
       );
       quad(
-        gameChar_x + 2,
-        gameChar_y - 25,
-        gameChar_x + 7,
-        gameChar_y - 25,
-        gameChar_x + 12,
-        gameChar_y,
-        gameChar_x + 7,
-        gameChar_y,
+        gameChar.x + 2,
+        gameChar.y - 25,
+        gameChar.x + 7,
+        gameChar.y - 25,
+        gameChar.x + 12,
+        gameChar.y,
+        gameChar.x + 7,
+        gameChar.y,
       );
       //arms left
       fill(210, 170, 120);
       quad(
-        gameChar_x - 12,
-        gameChar_y - 42,
-        gameChar_x - 7,
-        gameChar_y - 42,
-        gameChar_x - 17,
-        gameChar_y - 57,
-        gameChar_x - 22,
-        gameChar_y - 57,
+        gameChar.x - 12,
+        gameChar.y - 42,
+        gameChar.x - 7,
+        gameChar.y - 42,
+        gameChar.x - 17,
+        gameChar.y - 57,
+        gameChar.x - 22,
+        gameChar.y - 57,
       );
       //shoulders left
       fill(193, 154, 107);
-      ellipse(gameChar_x - 9, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x - 9, gameChar.y - 42, 7, 7);
       //torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
 
       //arms right
       fill(210, 170, 120);
       quad(
-        gameChar_x + 3,
-        gameChar_y - 45,
-        gameChar_x + 8,
-        gameChar_y - 45,
-        gameChar_x + 18,
-        gameChar_y - 63,
-        gameChar_x + 13,
-        gameChar_y - 63,
+        gameChar.x + 3,
+        gameChar.y - 45,
+        gameChar.x + 8,
+        gameChar.y - 45,
+        gameChar.x + 18,
+        gameChar.y - 63,
+        gameChar.x + 13,
+        gameChar.y - 63,
       );
 
       //shoulder right
       fill(193, 154, 107);
-      ellipse(gameChar_x + 5, gameChar_y - 45, 7, 7);
+      ellipse(gameChar.x + 5, gameChar.y - 45, 7, 7);
       //glasses
       stroke(100);
-      line(gameChar_x + 9, gameChar_y - 61, gameChar_x - 10, gameChar_y - 61);
+      line(gameChar.x + 9, gameChar.y - 61, gameChar.x - 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x - 8, gameChar_y - 59, 4, 5);
-      ellipse(gameChar_x - 2, gameChar_y - 59, 7, 6);
+      ellipse(gameChar.x - 8, gameChar.y - 59, 4, 5);
+      ellipse(gameChar.x - 2, gameChar.y - 59, 7, 6);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
 
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     } else if (isRight && isJumping) {
-      // add your jumping-right code
+      //------------------------------JUMPING FACING RIGHT-------------------------------------------
       // head
       //
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
 
       // legs
       fill(140, 120, 90);
       quad(
-        gameChar_x + 8,
-        gameChar_y - 25,
-        gameChar_x + 3,
-        gameChar_y - 25,
-        gameChar_x + 8,
-        gameChar_y,
-        gameChar_x + 13,
-        gameChar_y,
+        gameChar.x + 8,
+        gameChar.y - 25,
+        gameChar.x + 3,
+        gameChar.y - 25,
+        gameChar.x + 8,
+        gameChar.y,
+        gameChar.x + 13,
+        gameChar.y,
       );
       quad(
-        gameChar_x - 2,
-        gameChar_y - 25,
-        gameChar_x - 7,
-        gameChar_y - 25,
-        gameChar_x - 12,
-        gameChar_y,
-        gameChar_x - 7,
-        gameChar_y,
+        gameChar.x - 2,
+        gameChar.y - 25,
+        gameChar.x - 7,
+        gameChar.y - 25,
+        gameChar.x - 12,
+        gameChar.y,
+        gameChar.x - 7,
+        gameChar.y,
       );
 
       // arm right
       fill(210, 170, 120);
       quad(
-        gameChar_x + 12,
-        gameChar_y - 42,
-        gameChar_x + 7,
-        gameChar_y - 42,
-        gameChar_x + 17,
-        gameChar_y - 57,
-        gameChar_x + 22,
-        gameChar_y - 57,
+        gameChar.x + 12,
+        gameChar.y - 42,
+        gameChar.x + 7,
+        gameChar.y - 42,
+        gameChar.x + 17,
+        gameChar.y - 57,
+        gameChar.x + 22,
+        gameChar.y - 57,
       );
 
       // shoulder right
       fill(193, 154, 107);
-      ellipse(gameChar_x + 9, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x + 9, gameChar.y - 42, 7, 7);
 
       // torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
 
       // arm left
       fill(210, 170, 120);
       quad(
-        gameChar_x - 3,
-        gameChar_y - 45,
-        gameChar_x - 8,
-        gameChar_y - 45,
-        gameChar_x - 18,
-        gameChar_y - 63,
-        gameChar_x - 13,
-        gameChar_y - 63,
+        gameChar.x - 3,
+        gameChar.y - 45,
+        gameChar.x - 8,
+        gameChar.y - 45,
+        gameChar.x - 18,
+        gameChar.y - 63,
+        gameChar.x - 13,
+        gameChar.y - 63,
       );
 
       // shoulder left
       fill(193, 154, 107);
-      ellipse(gameChar_x - 5, gameChar_y - 45, 7, 7);
+      ellipse(gameChar.x - 5, gameChar.y - 45, 7, 7);
 
       // glasses
       stroke(100);
-      line(gameChar_x - 9, gameChar_y - 61, gameChar_x + 10, gameChar_y - 61);
+      line(gameChar.x - 9, gameChar.y - 61, gameChar.x + 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x + 8, gameChar_y - 59, 4, 5);
-      ellipse(gameChar_x + 2, gameChar_y - 59, 7, 6);
+      ellipse(gameChar.x + 8, gameChar.y - 59, 4, 5);
+      ellipse(gameChar.x + 2, gameChar.y - 59, 7, 6);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
 
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     } else if (isLeft && !isPlummeting) {
-      // add your walking left code
+      //-------------------------FACING LEFT--------------------------------------
       //head
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
       //legs
       fill(140, 120, 90);
       quad(
-        gameChar_x - 8,
-        gameChar_y - 25,
-        gameChar_x - 3,
-        gameChar_y - 25,
-        gameChar_x - 8,
-        gameChar_y,
-        gameChar_x - 13,
-        gameChar_y,
+        gameChar.x - 8,
+        gameChar.y - 25,
+        gameChar.x - 3,
+        gameChar.y - 25,
+        gameChar.x - 8,
+        gameChar.y,
+        gameChar.x - 13,
+        gameChar.y,
       );
       quad(
-        gameChar_x + 2,
-        gameChar_y - 25,
-        gameChar_x + 7,
-        gameChar_y - 25,
-        gameChar_x + 12,
-        gameChar_y,
-        gameChar_x + 7,
-        gameChar_y,
+        gameChar.x + 2,
+        gameChar.y - 25,
+        gameChar.x + 7,
+        gameChar.y - 25,
+        gameChar.x + 12,
+        gameChar.y,
+        gameChar.x + 7,
+        gameChar.y,
       );
       //arms left
       fill(210, 170, 120);
       quad(
-        gameChar_x - 12,
-        gameChar_y - 42,
-        gameChar_x - 7,
-        gameChar_y - 42,
-        gameChar_x - 17,
-        gameChar_y - 27,
-        gameChar_x - 22,
-        gameChar_y - 27,
+        gameChar.x - 12,
+        gameChar.y - 42,
+        gameChar.x - 7,
+        gameChar.y - 42,
+        gameChar.x - 17,
+        gameChar.y - 27,
+        gameChar.x - 22,
+        gameChar.y - 27,
       );
       //shoulders left
       fill(193, 154, 107);
-      ellipse(gameChar_x - 9, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x - 9, gameChar.y - 42, 7, 7);
       //torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
 
       //arms right
       fill(210, 170, 120);
       quad(
-        gameChar_x + 3,
-        gameChar_y - 45,
-        gameChar_x + 8,
-        gameChar_y - 45,
-        gameChar_x + 18,
-        gameChar_y - 27,
-        gameChar_x + 13,
-        gameChar_y - 27,
+        gameChar.x + 3,
+        gameChar.y - 45,
+        gameChar.x + 8,
+        gameChar.y - 45,
+        gameChar.x + 18,
+        gameChar.y - 27,
+        gameChar.x + 13,
+        gameChar.y - 27,
       );
 
       //shoulder right
       fill(193, 154, 107);
-      ellipse(gameChar_x + 5, gameChar_y - 45, 7, 7);
+      ellipse(gameChar.x + 5, gameChar.y - 45, 7, 7);
       //glasses
       stroke(100);
-      line(gameChar_x + 9, gameChar_y - 61, gameChar_x - 10, gameChar_y - 61);
+      line(gameChar.x + 9, gameChar.y - 61, gameChar.x - 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x - 8, gameChar_y - 59, 4, 5);
-      ellipse(gameChar_x - 2, gameChar_y - 59, 7, 6);
+      ellipse(gameChar.x - 8, gameChar.y - 59, 4, 5);
+      ellipse(gameChar.x - 2, gameChar.y - 59, 7, 6);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
 
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     } else if (isRight && !isPlummeting) {
-      // add your walking right code
+      //----------------FACING RIGHT----------------------------------------------------------------
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
 
       // legs
       fill(140, 120, 90);
       quad(
-        gameChar_x + 8,
-        gameChar_y - 25,
-        gameChar_x + 3,
-        gameChar_y - 25,
-        gameChar_x + 8,
-        gameChar_y,
-        gameChar_x + 13,
-        gameChar_y,
+        gameChar.x + 8,
+        gameChar.y - 25,
+        gameChar.x + 3,
+        gameChar.y - 25,
+        gameChar.x + 8,
+        gameChar.y,
+        gameChar.x + 13,
+        gameChar.y,
       );
       quad(
-        gameChar_x - 2,
-        gameChar_y - 25,
-        gameChar_x - 7,
-        gameChar_y - 25,
-        gameChar_x - 12,
-        gameChar_y,
-        gameChar_x - 7,
-        gameChar_y,
+        gameChar.x - 2,
+        gameChar.y - 25,
+        gameChar.x - 7,
+        gameChar.y - 25,
+        gameChar.x - 12,
+        gameChar.y,
+        gameChar.x - 7,
+        gameChar.y,
       );
 
       // arm right
       fill(210, 170, 120);
       quad(
-        gameChar_x + 12,
-        gameChar_y - 42,
-        gameChar_x + 7,
-        gameChar_y - 42,
-        gameChar_x + 17,
-        gameChar_y - 27,
-        gameChar_x + 22,
-        gameChar_y - 27,
+        gameChar.x + 12,
+        gameChar.y - 42,
+        gameChar.x + 7,
+        gameChar.y - 42,
+        gameChar.x + 17,
+        gameChar.y - 27,
+        gameChar.x + 22,
+        gameChar.y - 27,
       );
 
       // shoulder right
       fill(193, 154, 107);
-      ellipse(gameChar_x + 9, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x + 9, gameChar.y - 42, 7, 7);
 
       // torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
 
       // arm left
       fill(210, 170, 120);
       quad(
-        gameChar_x - 3,
-        gameChar_y - 45,
-        gameChar_x - 8,
-        gameChar_y - 45,
-        gameChar_x - 18,
-        gameChar_y - 27,
-        gameChar_x - 13,
-        gameChar_y - 27,
+        gameChar.x - 3,
+        gameChar.y - 45,
+        gameChar.x - 8,
+        gameChar.y - 45,
+        gameChar.x - 18,
+        gameChar.y - 27,
+        gameChar.x - 13,
+        gameChar.y - 27,
       );
 
       // shoulder left
       fill(193, 154, 107);
-      ellipse(gameChar_x - 5, gameChar_y - 45, 7, 7);
+      ellipse(gameChar.x - 5, gameChar.y - 45, 7, 7);
 
       // glasses
       stroke(100);
-      line(gameChar_x - 9, gameChar_y - 61, gameChar_x + 10, gameChar_y - 61);
+      line(gameChar.x - 9, gameChar.y - 61, gameChar.x + 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x + 8, gameChar_y - 59, 4, 5);
-      ellipse(gameChar_x + 2, gameChar_y - 59, 7, 6);
+      ellipse(gameChar.x + 8, gameChar.y - 59, 4, 5);
+      ellipse(gameChar.x + 2, gameChar.y - 59, 7, 6);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
 
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     } else if (isJumping || isPlummeting) {
-      // add your jumping facing forwards code
+      //---------------------FALLING LOOKING STRAIGHT-------------------------------------
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
       //legs
       fill(140, 120, 90);
-      rect(gameChar_x - 8, gameChar_y - 25, 7, 25, 10, 10, 10, 10);
-      rect(gameChar_x, gameChar_y - 25, 7, 25, 10);
+      rect(gameChar.x - 8, gameChar.y - 25, 7, 25, 10, 10, 10, 10);
+      rect(gameChar.x, gameChar.y - 25, 7, 25, 10);
       //torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
       //arms
       fill(210, 170, 120);
-      rect(gameChar_x - 15, gameChar_y - 62, 5, 20, 90);
-      rect(gameChar_x + 10, gameChar_y - 62, 5, 20, 90);
+      rect(gameChar.x - 15, gameChar.y - 62, 5, 20, 90);
+      rect(gameChar.x + 10, gameChar.y - 62, 5, 20, 90);
       //shoulders
       fill(193, 154, 107);
-      ellipse(gameChar_x - 12, gameChar_y - 42, 7, 7);
-      ellipse(gameChar_x + 12, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x - 12, gameChar.y - 42, 7, 7);
+      ellipse(gameChar.x + 12, gameChar.y - 42, 7, 7);
       //glasses
       stroke(100);
-      line(gameChar_x + 9, gameChar_y - 61, gameChar_x - 10, gameChar_y - 61);
+      line(gameChar.x + 9, gameChar.y - 61, gameChar.x - 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x - 4, gameChar_y - 59, 7, 5);
-      ellipse(gameChar_x + 4, gameChar_y - 59, 7, 5);
+      ellipse(gameChar.x - 4, gameChar.y - 59, 7, 5);
+      ellipse(gameChar.x + 4, gameChar.y - 59, 7, 5);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     } else {
-      // add your standing front facing code
+      //-----------------------STANDING-----------------------------------------------------
       //head
       fill(237, 201, 175);
-      ellipse(gameChar_x, gameChar_y - 60, 20, 20);
+      ellipse(gameChar.x, gameChar.y - 60, 20, 20);
       //legs
       fill(140, 120, 90);
-      rect(gameChar_x - 8, gameChar_y - 25, 7, 25, 10, 10, 10, 10);
-      rect(gameChar_x, gameChar_y - 25, 7, 25, 10);
+      rect(gameChar.x - 8, gameChar.y - 25, 7, 25, 10, 10, 10, 10);
+      rect(gameChar.x, gameChar.y - 25, 7, 25, 10);
       //torso
       fill(180, 120, 60);
-      rect(gameChar_x - 10, gameChar_y - 50, 20, 30, 10, 10, 90, 90);
+      rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
       //arms
       fill(210, 170, 120);
-      rect(gameChar_x - 15, gameChar_y - 42, 5, 20, 0, 0, 90, 90);
-      rect(gameChar_x + 10, gameChar_y - 42, 5, 20, 0, 0, 90, 90);
+      rect(gameChar.x - 15, gameChar.y - 42, 5, 20, 0, 0, 90, 90);
+      rect(gameChar.x + 10, gameChar.y - 42, 5, 20, 0, 0, 90, 90);
       //shoulders
       fill(193, 154, 107);
-      ellipse(gameChar_x - 12, gameChar_y - 42, 7, 7);
-      ellipse(gameChar_x + 12, gameChar_y - 42, 7, 7);
+      ellipse(gameChar.x - 12, gameChar.y - 42, 7, 7);
+      ellipse(gameChar.x + 12, gameChar.y - 42, 7, 7);
       //glasses
       stroke(100);
-      line(gameChar_x + 9, gameChar_y - 61, gameChar_x - 10, gameChar_y - 61);
+      line(gameChar.x + 9, gameChar.y - 61, gameChar.x - 10, gameChar.y - 61);
       fill(255, 0, 10);
-      ellipse(gameChar_x - 4, gameChar_y - 59, 7, 5);
-      ellipse(gameChar_x + 4, gameChar_y - 59, 7, 5);
+      ellipse(gameChar.x - 4, gameChar.y - 59, 7, 5);
+      ellipse(gameChar.x + 4, gameChar.y - 59, 7, 5);
       //hoverboard
       noStroke();
       fill(60);
-      rect(gameChar_x - 18, gameChar_y - 2, 36, 6, 5);
+      rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
 
       fill(0);
-      ellipse(gameChar_x - 10, gameChar_y + 4, 6, 6);
-      ellipse(gameChar_x + 10, gameChar_y + 4, 6, 6);
+      ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
+      ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
     }
+    //=============JUMPING MECHANISM=======================
+    //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
     if (isJumping || isPlummeting) {
-      gameChar_y += gameChar_yvelocity;
-      gameChar_yvelocity += gravity;
+      gameChar.y += gameChar.velocity;
+      gameChar.velocity += gravity;
 
-      if (gameChar_y >= ground.y) {
+      if (gameChar.y >= ground.y) {
         if (overPit) {
           isPlummeting = true;
           isJumping = false;
         } else {
-          gameChar_y = ground.y;
+          gameChar.y = ground.y;
           isJumping = false;
           isPlummeting = false;
-          gameChar_yvelocity = 0;
+          gameChar.velocity = 0;
         }
-      }
+      } //game character walk over pit
     } else if (overPit) {
       isPlummeting = true;
-      gameChar_yvelocity = 0;
-    }
-    if (isPlummeting && gameChar_y > windowHeight + 100) {
+      gameChar.velocity = 0;
+    } //game character falling enough=game over
+    if (isPlummeting && gameChar.y > windowHeight + 100) {
       gameState = "GAME OVER";
     }
     pop(); //sidescrolling element end
+    //================HUD=======================
+    //drawn after world creation to be visible always
     push();
     textSize(20);
     fill(0);
@@ -703,6 +759,7 @@ function draw() {
     noStroke();
     text(mouseX + "," + mouseY, mouseX, mouseY);
     pop();
+    //===================WIP=======================================
     // if (waterbottle.is_found == true) {
     //   push();
     //   fill(0);
@@ -712,16 +769,19 @@ function draw() {
     //   text("1/10 waterbottles found!", windowWidth - 20, 20);
     //   pop();
     // }
+
     if (!isPlummeting) {
       if (isRight == true) {
-        gameChar_x += 5;
+        gameChar.x += gameChar.speed;
       } else if (isLeft == true) {
-        gameChar_x -= 5;
+        gameChar.x -= gameChar.speed;
       }
     }
+    //restrict game character to world limits
+    gameChar.x = constrain(gameChar.x, 0, worldWidth);
+    //====================PAUSE SCREEN=======================================
   } else if (gameState == "PAUSE") {
     background(100);
-    //stroke(200);
     textSize(150);
     fill(255);
     textFont("Papyrus");
@@ -729,6 +789,7 @@ function draw() {
     text("Riding Paused", windowWidth / 2, windowHeight / 2);
     textSize(20);
     text("Press ESC key to continue", windowWidth / 2, windowHeight / 2 + 200);
+    //====================GAME OVER SCREEN======================================
   } else if (gameState == "GAME OVER") {
     background(20);
     textSize(100);
@@ -747,63 +808,55 @@ function draw() {
   }
 }
 function keyPressed() {
-  // if statements to control the animation of the character when
-  // keys are pressed.
-
-  //open up the console to see how these work
-  console.log("keyPressed: " + key);
-  console.log("keyPressed: " + keyCode);
+  //START screen and spacebar begins the game
   if (gameState == "START" && keyCode == 32) {
-    //space
+    //spacebar
     gameState = "PLAY";
   }
 
   if (gameState == "PLAY") {
     if (keyCode == 68) {
-      console.log("walking right");
+      //D key=move right
       isRight = true;
     } else if (keyCode == 65) {
-      console.log("walking left");
+      //A key=move left
       isLeft = true;
     } else if (keyCode == 87) {
-      console.log("jumping");
+      //W key=jump up but only if not already jumping or falling
       if (!isJumping && !isPlummeting) {
         isJumping = true;
-        gameChar_yvelocity = jumpStrength;
+        gameChar.velocity = jumpStrength;
       }
     } else if (keyCode == 27) {
-      //escape
-      console.log("triggered");
+      //ESCAPE key=pause the game
+
       gameState = "PAUSE";
     }
   } else if (gameState == "PAUSE") {
     if (keyCode == 27) {
+      //ESCAPE key=continue playing the game again
       gameState = "PLAY";
     }
   } else if (gameState == "GAME OVER" && keyCode == 32) {
-    gameChar_x = 0;
-    gameChar_y = ground.y;
-    gameChar_yvelocity = 0;
+    //spacebar on GAME OVER=reset everything and back to PLAY state
+    gameChar.x = 0;
+    gameChar.y = ground.y;
+    gameChar.velocity = 0;
     isJumping = false;
     isPlummeting = false;
     isLeft = false;
     isRight = false;
     gameState = "PLAY";
   }
-  return false;
+  return false; //prevent browser from scrolling
 }
 
 function keyReleased() {
-  // if statements to control the animation of the character when
-  // keys are released.
-
-  console.log("keyReleased: " + key);
-  console.log("keyReleased: " + keyCode);
   if (keyCode == 68) {
-    console.log("stop walking right");
+    //RELEASE D key=stop walking right
     isRight = false;
   } else if (keyCode == 65) {
-    console.log("stop walking left");
+    //RELEASE A key=stop walking left
     isLeft = false;
   }
 }
