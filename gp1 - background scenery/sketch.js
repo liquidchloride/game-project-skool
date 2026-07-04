@@ -768,9 +768,7 @@ function draw() {
     textFont("Papyrus");
     textAlign(LEFT, TOP);
     text("Press ESC key to pause game", 20, 20);
-    fill(0);
-    noStroke();
-    text(mouseX + "," + mouseY, mouseX, mouseY);
+
     pop();
     //===================WIP=======================================
 
