@@ -16,6 +16,7 @@ var gravity;
 var jumpStrength;
 var isJumping = false;
 var waterbottleArray;
+var waterbottlesFound;
 var gameState;
 var pitsArray;
 var cloudArray;
@@ -78,17 +79,18 @@ function setup() {
     speed: 5, //set game character speed
   };
 
-  gravity = 0.2; //push character down each frame to replicate gravity
-  jumpStrength = -5; //how high game character can jump
-  // waterbottleArray = [];//WIP
-  // for (let i = 1; i < 11; i++) {
-  //   waterbottle = {
-  //     x: 1000 * i + random(1, 100), //waterbottle x pos every 1000px+(1 to 100)
-  //     y: ground.y - 30, //waterbottle abit higher than ground
-  //     is_found: false,
-  //   };
-  //   waterbottleArray.push(waterbottle);
-  // }
+  gravity = 0.15; //push character down each frame to replicate gravity
+  jumpStrength = -6; //how high game character can jump
+  waterbottleArray = []; //WIP
+  for (let i = 1; i < 11; i++) {
+    waterbottle = {
+      x: 600 * i + random(1, 100), //waterbottle x pos every 1000px+(1 to 100)
+      y: ground.y - 50, //waterbottle abit higher than ground
+      is_found: false,
+    };
+    waterbottleArray.push(waterbottle);
+    waterbottlesFound = 0;
+  }
 
   gameState = "START"; //make game state START by default
 }
@@ -297,49 +299,58 @@ function draw() {
         windowHeight - ground.y,
       );
       if (
-        gameChar.x > pitsArray[i].x &&
-        gameChar.x < pitsArray[i].x + pitsArray[i].width
+        gameChar.x > pitsArray[i].x + 15 &&
+        gameChar.x < pitsArray[i].x + pitsArray[i].width - 15
       ) {
         overPit = true;
       }
     }
     //WIP FOR TOKEN
-    //   for (let i = 0; i < waterbottleArray.length; i++) {
-    //     fill(0, 200, 255);
-    //     rect(
-    //       waterbottleArray[i].x,
-    //       waterbottleArray[i].y,
-    //       10,
-    //       20,
-    //       90,
-    //       90,
-    //       10,
-    //       10,
-    //     );
-    //     fill(255);
-    //     rect(
-    //       waterbottleArray[i].x + 2.5,
-    //       waterbottleArray[i].y - 5,
-    //       5,
-    //       5,
-    //       0,
-    //       0,
-    //       50,
-    //       50,
-    //     );
-    //     rect(waterbottleArray[i].x, waterbottleArray[i].y + 5, 10, 5);
-    //   }
-    //   if (dist(gameChar.x, gameChar.y - 40, waterbottle.x, waterbottle.y) < 20) {
-    //     console.log("triggered");
-    //     waterbottle.is_found = true;
-    //   }
-    //   if (waterbottle.is_found == false) {
-    //     fill(0, 200, 255);
-    //     rect(waterbottle.x, waterbottle.y, 10, 20, 90, 90, 10, 10);
-    //     fill(255);
-    //     rect(waterbottle.x + 2.5, waterbottle.y - 5, 5, 5, 0, 0, 50, 50);
-    //     rect(waterbottle.x, waterbottle.y + 5, 10, 5);
-    // }
+    for (let i = 0; i < waterbottleArray.length; i++) {
+      if (waterbottleArray[i].is_found == false) {
+        fill(255, 255, 255, 50);
+        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 30, 30);
+        fill(255, 255, 255, 40);
+        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 40, 40);
+        fill(255, 255, 255, 30);
+        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 50, 50);
+        fill(0, 200, 255);
+        rect(
+          waterbottleArray[i].x,
+          waterbottleArray[i].y,
+          10,
+          20,
+          90,
+          90,
+          10,
+          10,
+        );
+        fill(255);
+        rect(
+          waterbottleArray[i].x + 2.5,
+          waterbottleArray[i].y - 5,
+          5,
+          5,
+          0,
+          0,
+          50,
+          50,
+        );
+        rect(waterbottleArray[i].x, waterbottleArray[i].y + 5, 10, 5);
+
+        if (
+          dist(
+            gameChar.x,
+            gameChar.y - 40,
+            waterbottleArray[i].x,
+            waterbottleArray[i].y,
+          ) < 20
+        ) {
+          waterbottleArray[i].is_found = true;
+          waterbottlesFound++;
+        }
+      }
+    }
     //====================GAME CHARACTER================================================
     //6 different states the character can be in depending on which condition is fulfiled
     if (isLeft && isJumping) {
@@ -755,22 +766,28 @@ function draw() {
     textSize(20);
     fill(0);
     textFont("Papyrus");
-    textAlign(LEFT, LEFT);
+    textAlign(LEFT, TOP);
     text("Press ESC key to pause game", 20, 20);
     fill(0);
     noStroke();
     text(mouseX + "," + mouseY, mouseX, mouseY);
     pop();
     //===================WIP=======================================
-    // if (waterbottle.is_found == true) {
-    //   push();
-    //   fill(0);
-    //   textSize(30);
-    //   textFont("Papyrus");
-    //   textAlign(RIGHT, TOP);
-    //   text("1/10 waterbottles found!", windowWidth - 20, 20);
-    //   pop();
-    // }
+
+    push();
+    fill(0);
+    textSize(30);
+    textFont("Papyrus");
+    textAlign(RIGHT, TOP);
+    text(
+      waterbottlesFound +
+        "/" +
+        waterbottleArray.length +
+        " water bottles found!",
+      windowWidth - 20,
+      20,
+    );
+    pop();
 
     if (!isPlummeting) {
       if (isRight == true) {
@@ -852,6 +869,10 @@ function keyPressed() {
     isPlummeting = false;
     isLeft = false;
     isRight = false;
+    waterbottlesFound = 0;
+    for (let i = 0; i < waterbottleArray.length; i++) {
+      waterbottleArray[i].is_found = false;
+    }
     gameState = "PLAY";
   }
   return false; //prevent browser from scrolling
