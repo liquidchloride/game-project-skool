@@ -2,7 +2,7 @@
 
 //ZA GAME JOJECT
 */
-var gameChar;
+var gameChar; //no assistance used for declaring global variables
 var cloud;
 var worldWidth;
 var worldHeight;
@@ -28,6 +28,9 @@ var cloud;
 var overPit;
 var cameraPosX;
 var deathalpha;
+//in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterbottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
+//gameChar object creation as well as physics mechanics was done with minimal aid from AI
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   //create array for  10 clouds with randomised y and scale and diffrent starting x
@@ -103,11 +106,13 @@ function setup() {
 }
 
 function draw() {
+  //for gamestate logic, I did it myself after running into issues with using diffrent variables to indicate each gamestates.Knowledge of states from other module came in handy here
   if (gameState == "START") {
     //=====================================START SCREEN===================================================
     noStroke();
     background(90, 55, 35);
     //SUN
+    //drawing of scenery was done without assistance or minimal.Refrence for ideas and inspiration taken from internet and online art
     fill(255, 60, 0, 80);
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
     fill(255, 60, 0, 120);
@@ -126,6 +131,7 @@ function draw() {
       0,
       0,
     );
+    //idea for font came from p5.js examples when looking through text
     textSize(150); //draw game name
     fill(255);
     textFont("Papyrus");
@@ -151,6 +157,7 @@ function draw() {
     );
 
     //SUN(fixed to screen, does not move)
+    //idea for fixing sun to screen was original, but execution through the use of push pop was aided by AI as unfamiliar
     push();
     fill(255, 60, 0);
     ellipse(ground.centre, ground.y, ground.centre, ground.centre);
@@ -161,6 +168,9 @@ function draw() {
     pop();
 
     //CLOUDS(fixed to screen,move independently of camera moving)
+    //array for clouds was already previously done up, design for scenery including clouds was from earlier templates that guided me.
+    //looping logic was done by me with help from friends for the conditions for loop to work
+    //animation was done by me alone
     for (let i = 0; i < cloudArray.length; i++) {
       fill(cloudArray[i].colour);
       rect(
@@ -198,6 +208,7 @@ function draw() {
       }
     }
     //sidescrolling element where everything out of push pop is stays  fixed
+    //side scrolling implemented after reading online on sidescrolling and watching videos as coursera was vague on this part
     push();
     translate(-cameraPosX, 0);
     //Desert Ground
@@ -206,6 +217,7 @@ function draw() {
 
     //================MOUNTAINS======================================================
     //3 triangles to replicate a mountain range
+    //same as clouds, where previously already done up.
     for (let i = 0; i < 7; i++) {
       fill(196, 132, 90);
       triangle(
@@ -235,9 +247,10 @@ function draw() {
         ground.y,
       );
     }
-    //jo
     //==========================CACTI=====================================================
     //collection of rectangles that make up a cactus
+    //initially was an array as I had gotten confident in use of arrays, but marking scheme asked for hardcoded values, so I adapted it.
+    //same as mountains,previously done in scenery template and transfered over
     for (let i = 0; i < stumpArrayX.length; i++) {
       fill(67, 124, 79);
       rect(
@@ -295,6 +308,8 @@ function draw() {
     //=========================================PITS=======================================
     //each pit is drawn from bottom of screen to ground level
     //overPit is true if game char x is within pit x values
+    //drawing of pits was done without assistance
+    //idea for use of overPit logic was helped by AI in shortening my code as I initialy used another longer roundabout method, but implementation was still done by me.
     overPit = false;
     for (let i = 0; i < pitsArray.length; i++) {
       fill(92, 58, 38);
@@ -311,7 +326,9 @@ function draw() {
         overPit = true;
       }
     }
-    //WIP FOR TOKEN
+    //=================================COLLECTABLE============================================
+    //drawing of token and idea of it being a water bottle was from me
+    //use of if and dist was from Sleuth practices where i applied the same concepts
     for (let i = 0; i < waterbottleArray.length; i++) {
       if (waterbottleArray[i].is_found == false) {
         fill(255, 255, 255, 50);
@@ -359,6 +376,9 @@ function draw() {
     }
     //====================GAME CHARACTER================================================
     //6 different states the character can be in depending on which condition is fulfiled
+    //this template is from the game project template but the drawing of the character is completely from me without any assistance.
+    //I also changed some of the character states to make it easier for me to understand
+    //design of character is purely original with minimal inspiration
     if (isLeft && isJumping) {
       //-------------------JUMPING FACING LEFT----------------------------------------------------
       //head
@@ -742,6 +762,9 @@ function draw() {
     }
     //=============JUMPING MECHANISM=======================
     //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
+    //gravity and velocity mechanics were done after watching videos of gravity and velocity implementation on 2d side scrolling games, where the concept is the same
+    //the troubleshooting for this was done with the help of AI where it simplified and explained it to me
+    //the falling into pits and flow into game over state was done with minimal help.
     if (isJumping || isPlummeting) {
       gameChar.y += gameChar.velocity;
       gameChar.velocity += gravity;
@@ -768,15 +791,15 @@ function draw() {
     pop(); //sidescrolling element end
     //================HUD=======================
     //drawn after world creation to be visible always
+    //HUD idea was inspired by other games to make the game more game like with a HUD of info and pausing instructions
+    //idea of showing objectives and progress is very common throughout games, so idea was inspired
     push();
     textSize(20);
     fill(0);
     textFont("Papyrus");
     textAlign(LEFT, TOP);
     text("Press ESC key to pause game", 20, 20);
-
     pop();
-    //===================WIP=======================================
 
     push();
     fill(0);
@@ -803,6 +826,7 @@ function draw() {
     //restrict game character to world limits
     gameChar.x = constrain(gameChar.x, 0, worldWidth);
     //====================PAUSE SCREEN=======================================
+    //design of pause screen and idea of it also common in many games, but drawing and implemantation of it was done without help
   } else if (gameState == "PAUSE") {
     background(100);
     textSize(150);
@@ -813,6 +837,8 @@ function draw() {
     textSize(20);
     text("Press ESC key to continue", windowWidth / 2, windowHeight / 2 + 200);
     //====================GAME OVER SCREEN======================================
+    //end conditions and screen was done without any help
+    //death screen inspired from popular game Dark Souls
   } else if (gameState == "GAME OVER") {
     background(20);
     deathalpha += 1;
@@ -835,6 +861,8 @@ function draw() {
   }
 }
 function keyPressed() {
+  //for both functions keyPressed and KeyReleased, the progress on sleuth really helped me as it had quite a few cases utilising these two functions
+  //aid also taken from game project template where the functions were already done up for me
   //START screen and spacebar begins the game
   if (gameState == "START" && keyCode == 32) {
     //spacebar
@@ -866,6 +894,7 @@ function keyPressed() {
     }
   } else if (gameState == "GAME OVER" && keyCode == 32) {
     //spacebar on GAME OVER=reset everything and back to PLAY state
+    //the execution for resetting the game was done with help from AI as i kept running into issues where it would break after resetting
     gameChar.x = 0;
     gameChar.y = ground.y;
     gameChar.velocity = 0;
