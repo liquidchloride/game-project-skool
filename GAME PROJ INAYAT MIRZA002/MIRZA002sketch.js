@@ -7,7 +7,9 @@ var cloud;
 var worldWidth;
 var worldHeight;
 var mountainArray;
-var stumpArray;
+var mountain;
+var stumpArrayX;
+var stumpScaleArray;
 var ground;
 var isLeft;
 var isRight;
@@ -16,12 +18,15 @@ var gravity;
 var jumpStrength;
 var isJumping = false;
 var waterbottleArray;
+var waterbottle;
 var waterbottlesFound;
 var gameState;
 var pitsArray;
+var pits;
 var cloudArray;
+var cloud;
 var overPit;
-var gameCharPOV;
+var cameraPosX;
 var deathalpha;
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -49,14 +54,15 @@ function setup() {
     mountainArray.push(mountain);
   }
   //create array for base of 26 cacti with random offset and sclae
-  stumpArray = [];
-  for (let i = 0; i < 26; i++) {
-    stump = {
-      x: i * 300 + random(100, 300), //spaced out but still random jitter
-      scale: random(0.5, 1.5), //random scale
-    };
-    stumpArray.push(stump);
-  }
+  stumpArrayX = [
+    180, 520, 740, 1160, 1310, 1800, 1990, 2350, 2530, 2980, 3160, 3520, 3700,
+    4170, 4350, 4790, 4980, 5340, 5520, 5960, 6200, 6440, 6880, 7060, 7430,
+    7690,
+  ];
+  stumpScaleArray = [
+    0.7, 1.2, 0.9, 1.4, 0.6, 1.1, 0.8, 1.3, 0.7, 1.0, 1.2, 0.9, 1.4, 0.6, 1.1,
+    0.8, 1.3, 0.7, 1.0, 1.2, 0.9, 1.4, 0.6, 1.1, 0.8, 1.3,
+  ];
   //create ground object to make code cleaner
   ground = {
     y: (windowHeight * 6) / 8, //ground always 6/8 of window height
@@ -91,7 +97,8 @@ function setup() {
     waterbottleArray.push(waterbottle);
     waterbottlesFound = 0;
   }
-
+  worldHeight = 1000;
+  worldWidth = 8000;
   gameState = "START"; //make game state START by default
 }
 
@@ -134,11 +141,10 @@ function draw() {
   } else if (gameState == "PLAY") {
     //=====================================MAIN GAMEPLAY=======================
     background(250, 206, 152); //draw world
-    worldHeight = 1000;
-    worldWidth = 8000;
+
     noStroke();
     //set camera POV on game char with limits of left and right of world
-    gameCharPOV = constrain(
+    cameraPosX = constrain(
       gameChar.x - windowWidth / 2,
       0,
       worldWidth - windowWidth,
@@ -193,7 +199,7 @@ function draw() {
     }
     //sidescrolling element where everything out of push pop is stays  fixed
     push();
-    translate(-gameCharPOV, 0);
+    translate(-cameraPosX, 0);
     //Desert Ground
     fill(237, 201, 138);
     rect(0, ground.y, worldWidth, (windowHeight * 2) / 8); //draw some green ground
@@ -232,53 +238,53 @@ function draw() {
     //jo
     //==========================CACTI=====================================================
     //collection of rectangles that make up a cactus
-    for (let i = 0; i < stumpArray.length; i++) {
+    for (let i = 0; i < stumpArrayX.length; i++) {
       fill(67, 124, 79);
       rect(
-        stumpArray[i].x,
-        ground.y - 80 * stumpArray[i].scale,
-        20 * stumpArray[i].scale,
-        80 * stumpArray[i].scale,
+        stumpArrayX[i],
+        ground.y - 80 * stumpScaleArray[i],
+        20 * stumpScaleArray[i],
+        80 * stumpScaleArray[i],
         90,
         90,
         0,
         0,
       );
       rect(
-        stumpArray[i].x - 25 * stumpArray[i].scale,
-        ground.y - 45 * stumpArray[i].scale,
-        25 * stumpArray[i].scale,
-        15 * stumpArray[i].scale,
+        stumpArrayX[i] - 25 * stumpScaleArray[i],
+        ground.y - 45 * stumpScaleArray[i],
+        25 * stumpScaleArray[i],
+        15 * stumpScaleArray[i],
         0,
         0,
         0,
         90,
       );
       rect(
-        stumpArray[i].x - 25 * stumpArray[i].scale,
-        ground.y - 90 * stumpArray[i].scale,
-        15 * stumpArray[i].scale,
-        45 * stumpArray[i].scale,
+        stumpArrayX[i] - 25 * stumpScaleArray[i],
+        ground.y - 90 * stumpScaleArray[i],
+        15 * stumpScaleArray[i],
+        45 * stumpScaleArray[i],
         90,
         90,
         0,
         0,
       );
       rect(
-        stumpArray[i].x + 20 * stumpArray[i].scale,
-        ground.y - 60 * stumpArray[i].scale,
-        20 * stumpArray[i].scale,
-        15 * stumpArray[i].scale,
+        stumpArrayX[i] + 20 * stumpScaleArray[i],
+        ground.y - 60 * stumpScaleArray[i],
+        20 * stumpScaleArray[i],
+        15 * stumpScaleArray[i],
         0,
         0,
         90,
         0,
       );
       rect(
-        stumpArray[i].x + 25 * stumpArray[i].scale,
-        ground.y - 100 * stumpArray[i].scale,
-        15 * stumpArray[i].scale,
-        50 * stumpArray[i].scale,
+        stumpArrayX[i] + 25 * stumpScaleArray[i],
+        ground.y - 100 * stumpScaleArray[i],
+        15 * stumpScaleArray[i],
+        50 * stumpScaleArray[i],
         90,
         90,
         0,
@@ -344,7 +350,7 @@ function draw() {
             gameChar.y - 40,
             waterbottleArray[i].x,
             waterbottleArray[i].y,
-          ) < 20
+          ) < 40
         ) {
           waterbottleArray[i].is_found = true;
           waterbottlesFound++;
