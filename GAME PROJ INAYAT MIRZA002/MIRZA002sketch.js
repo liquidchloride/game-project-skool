@@ -27,7 +27,8 @@ var cloudArray;
 var cloud;
 var overPit;
 var cameraPosX;
-var deathalpha;
+var deathAlpha;
+var winAlpha;
 //in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterbottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
 //gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
@@ -329,6 +330,7 @@ function draw() {
     //=================================COLLECTABLE============================================
     //drawing of token and idea of it being a water bottle was from me
     //use of if and dist was from Sleuth practices where i applied the same concepts
+
     for (let i = 0; i < waterbottleArray.length; i++) {
       if (waterbottleArray[i].is_found == false) {
         fill(255, 255, 255, 50);
@@ -786,7 +788,11 @@ function draw() {
     } //game character falling enough=game over
     if (isPlummeting && gameChar.y > windowHeight + 100) {
       gameState = "GAME OVER";
-      deathalpha = 0;
+      deathAlpha = 0;
+    }
+    if (waterbottlesFound == waterbottleArray.length) {
+      gameState = "WIN";
+      winAlpha = 0;
     }
     pop(); //sidescrolling element end
     //================HUD=======================
@@ -841,12 +847,12 @@ function draw() {
     //death screen inspired from popular game Dark Souls
   } else if (gameState == "GAME OVER") {
     background(20);
-    deathalpha += 1;
-    if (deathalpha > 255) {
-      deathalpha = 255;
+    deathAlpha += 1;
+    if (deathAlpha > 255) {
+      deathAlpha = 255;
     }
-    textSize(500);
-    fill(255, 50, 50, deathalpha);
+    textSize(300);
+    fill(255, 50, 50, deathAlpha);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
     text("YOU DIED", windowWidth / 2, windowHeight / 2);
@@ -857,6 +863,33 @@ function draw() {
       "Press spacebar to try again",
       windowWidth / 2,
       windowHeight / 2 + 300,
+    );
+  } else if (gameState == "WIN") {
+    background(0);
+    winAlpha += 1;
+    if (winAlpha > 255) {
+      winAlpha = 255;
+    }
+    textSize(300);
+    fill(50, 255, 50, winAlpha);
+    textFont("Papyrus");
+    textAlign(CENTER, CENTER);
+    text("YOU WIN", windowWidth / 2, windowHeight / 2);
+    textSize(20);
+    text(
+      "Score:" + waterbottlesFound + "/" + waterbottleArray.length,
+      windowWidth / 2,
+      windowHeight / 2 + 200,
+    );
+    text(
+      "Press spacebar to try again!",
+      windowWidth / 2,
+      windowHeight / 2 + 300,
+    );
+    text(
+      "Press ESC key to return to main menu screen",
+      windowWidth / 2,
+      windowHeight / 2 + 400,
     );
   }
 }
@@ -891,6 +924,34 @@ function keyPressed() {
     if (keyCode == 27) {
       //ESCAPE key=continue playing the game again
       gameState = "PLAY";
+    }
+  } else if (gameState == "WIN") {
+    if (keyCode == 32) {
+      gameChar.x = 0;
+      gameChar.y = ground.y;
+      gameChar.velocity = 0;
+      isJumping = false;
+      isPlummeting = false;
+      isLeft = false;
+      isRight = false;
+      waterbottlesFound = 0;
+      for (let i = 0; i < waterbottleArray.length; i++) {
+        waterbottleArray[i].is_found = false;
+      }
+      gameState = "PLAY";
+    } else if (keyCode == 27) {
+      gameChar.x = 0;
+      gameChar.y = ground.y;
+      gameChar.velocity = 0;
+      isJumping = false;
+      isPlummeting = false;
+      isLeft = false;
+      isRight = false;
+      waterbottlesFound = 0;
+      for (let i = 0; i < waterbottleArray.length; i++) {
+        waterbottleArray[i].is_found = false;
+      }
+      gameState = "START";
     }
   } else if (gameState == "GAME OVER" && keyCode == 32) {
     //spacebar on GAME OVER=reset everything and back to PLAY state
