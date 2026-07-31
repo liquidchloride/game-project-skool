@@ -851,19 +851,25 @@ function draw() {
     if (deathAlpha > 255) {
       deathAlpha = 255;
     }
-    textSize(300);
     fill(255, 50, 50, deathAlpha);
+    textSize(300);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
     text("YOU DIED", windowWidth / 2, windowHeight / 2);
     textSize(20);
-    fill(255);
+
     text("git gud", windowWidth / 2, windowHeight / 2 - 300);
+    text(
+      "Score:" + waterbottlesFound + "/" + waterbottleArray.length,
+      windowWidth / 2,
+      windowHeight / 2 - 500,
+    );
     text(
       "Press spacebar to try again",
       windowWidth / 2,
       windowHeight / 2 + 300,
     );
+    //=========================win screen====================================================
   } else if (gameState == "WIN") {
     background(0);
     winAlpha += 1;
