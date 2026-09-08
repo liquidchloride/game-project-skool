@@ -17,19 +17,18 @@ var isPlummeting;
 var gravity;
 var jumpStrength;
 var isJumping = false;
-var waterbottleArray;
-var waterbottle;
-var waterbottlesFound;
+var waterBottleArray;
+var waterBottle;
+var waterBottlesFound;
 var gameState;
 var pitsArray;
 var pits;
 var cloudArray;
-var cloud;
 var overPit;
 var cameraPosX;
 var deathAlpha;
 var winAlpha;
-//in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterbottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
+//in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterBottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
 //gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
 function setup() {
@@ -39,8 +38,8 @@ function setup() {
   for (let i = 0; i < 10; i++) {
     cloud = {
       pos: {
-        X: -200 - random(0, 600),
-        Y: random(10, 250),
+        x: -200 - random(0, 600),
+        y: random(10, 250),
         scale: random(0.5, 1),
       },
       speed: random(0.1, 2),
@@ -83,7 +82,7 @@ function setup() {
     pitsArray.push(pits);
   }
   gameChar = {
-    x: 0, //spawn game character at x=0
+    x: 100, //spawn game character at x=100
     y: ground.y, //spawn game character at y=ground level
     velocity: 0, //set velocity as 0 when spawn in
     speed: 5, //set game character speed
@@ -91,15 +90,15 @@ function setup() {
 
   gravity = 0.15; //push character down each frame to replicate gravity
   jumpStrength = -6; //how high game character can jump
-  waterbottleArray = []; //WIP
+  waterBottleArray = []; //WIP
   for (let i = 1; i < 11; i++) {
-    waterbottle = {
-      x: 600 * i + random(1, 100), //waterbottle x pos every 1000px+(1 to 100)
-      y: ground.y - 50, //waterbottle abit higher than ground
-      is_found: false,
+    waterBottle = {
+      x: 600 * i + random(1, 100), //waterBottle x pos every 1000px+(1 to 100)
+      y: ground.y - 50 - random(1, 50), //waterBottle abit higher than ground
+      isFound: false,
     };
-    waterbottleArray.push(waterbottle);
-    waterbottlesFound = 0;
+    waterBottleArray.push(waterBottle);
+    waterBottlesFound = 0;
   }
   worldHeight = 1000;
   worldWidth = 8000;
@@ -139,15 +138,15 @@ function draw() {
     textAlign(CENTER, CENTER);
     text("Dune Rider", windowWidth / 2, windowHeight / 2);
     textSize(20); //draw game controls
-    text("Press spacebar to START", windowWidth / 2, windowHeight / 2 + 200);
+    text("Press spacebar to START", windowWidth / 2, windowHeight * 0.7);
     text(
       "A to move left, D to move right, W to jump up",
       windowWidth / 2,
-      windowHeight / 2 + 400,
+      windowHeight * 0.85,
     );
   } else if (gameState == "PLAY") {
     //=====================================MAIN GAMEPLAY=======================
-    background(250, 206, 152); //draw world
+    background(135, 175, 195); //draw world
 
     noStroke();
     //set camera POV on game char with limits of left and right of world
@@ -168,44 +167,45 @@ function draw() {
     ellipse(ground.centre, ground.y, ground.centre + 200, ground.centre + 200);
     pop();
 
-    //CLOUDS(fixed to screen,move independently of camera moving)
+    //=====================================CLOUDS(fixed to screen,move independently of camera moving)================================================
     //array for clouds was already previously done up, design for scenery including clouds was from earlier templates that guided me.
     //looping logic was done by me with help from friends for the conditions for loop to work
     //animation was done by me alone
     for (let i = 0; i < cloudArray.length; i++) {
       fill(cloudArray[i].colour);
       rect(
-        cloudArray[i].pos.X + 10 * cloudArray[i].pos.scale,
-        cloudArray[i].pos.Y,
+        cloudArray[i].pos.x - 90 * cloudArray[i].pos.scale,
+        cloudArray[i].pos.y,
         180 * cloudArray[i].pos.scale,
         50 * cloudArray[i].pos.scale,
       );
+
       ellipse(
-        cloudArray[i].pos.X + 10 * cloudArray[i].pos.scale,
-        cloudArray[i].pos.Y,
+        cloudArray[i].pos.x - 90 * cloudArray[i].pos.scale,
+        cloudArray[i].pos.y,
         100 * cloudArray[i].pos.scale,
         100 * cloudArray[i].pos.scale,
       );
+
       ellipse(
-        cloudArray[i].pos.X + 100 * cloudArray[i].pos.scale,
-        cloudArray[i].pos.Y,
+        cloudArray[i].pos.x,
+        cloudArray[i].pos.y,
         100 * cloudArray[i].pos.scale,
         100 * cloudArray[i].pos.scale,
       );
+
       ellipse(
-        cloudArray[i].pos.X + 190 * cloudArray[i].pos.scale,
-        cloudArray[i].pos.Y,
+        cloudArray[i].pos.x + 90 * cloudArray[i].pos.scale,
+        cloudArray[i].pos.y,
         100 * cloudArray[i].pos.scale,
         100 * cloudArray[i].pos.scale,
       );
-      if (cloudArray[i].pos.X > -200 && cloudArray[i].pos.X < windowWidth) {
-        //if cloud is within view,keep moving
-        cloudArray[i].pos.X += cloudArray[i].speed;
+      if (cloudArray[i].pos.x < windowWidth + 150) {
+        cloudArray[i].pos.x += cloudArray[i].speed;
       } else {
-        //else rest it with random Y and scale
-        cloudArray[i].pos.Y = random(10, 250);
+        cloudArray[i].pos.y = random(50, 250);
         cloudArray[i].pos.scale = random(0.5, 1);
-        cloudArray[i].pos.X = -199;
+        cloudArray[i].pos.x = -149;
       }
     }
     //sidescrolling element where everything out of push pop is stays  fixed
@@ -219,32 +219,36 @@ function draw() {
     //================MOUNTAINS======================================================
     //3 triangles to replicate a mountain range
     //same as clouds, where previously already done up.
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < mountainArray.length; i++) {
+      // Middle mountain
       fill(196, 132, 90);
       triangle(
+        mountainArray[i].x - 150 * mountainArray[i].scale,
+        ground.y,
+        mountainArray[i].x,
+        ground.y - ((windowHeight * 3) / 8) * mountainArray[i].scale,
         mountainArray[i].x + 150 * mountainArray[i].scale,
         ground.y,
-        mountainArray[i].x + 300 * mountainArray[i].scale,
-        ground.y - ((windowHeight * 3) / 8) * mountainArray[i].scale,
-        mountainArray[i].x + 450 * mountainArray[i].scale,
+      );
+
+      // Left mountain
+      fill(140, 76, 48);
+      triangle(
+        mountainArray[i].x - 300 * mountainArray[i].scale,
+        ground.y,
+        mountainArray[i].x - 150 * mountainArray[i].scale,
+        ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
+        mountainArray[i].x,
         ground.y,
       );
-      fill(140, 76, 48);
+
+      // Right mountain
       triangle(
         mountainArray[i].x,
         ground.y,
         mountainArray[i].x + 150 * mountainArray[i].scale,
         ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
         mountainArray[i].x + 300 * mountainArray[i].scale,
-        ground.y,
-      );
-      fill(140, 76, 48);
-      triangle(
-        mountainArray[i].x + 300 * mountainArray[i].scale,
-        ground.y,
-        mountainArray[i].x + 450 * mountainArray[i].scale,
-        ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
-        mountainArray[i].x + 600 * mountainArray[i].scale,
         ground.y,
       );
     }
@@ -254,8 +258,9 @@ function draw() {
     //same as mountains,previously done in scenery template and transfered over
     for (let i = 0; i < stumpArrayX.length; i++) {
       fill(67, 124, 79);
+
       rect(
-        stumpArrayX[i],
+        stumpArrayX[i] - 10 * stumpScaleArray[i], // changed: 0 → -10
         ground.y - 80 * stumpScaleArray[i],
         20 * stumpScaleArray[i],
         80 * stumpScaleArray[i],
@@ -264,8 +269,9 @@ function draw() {
         0,
         0,
       );
+
       rect(
-        stumpArrayX[i] - 25 * stumpScaleArray[i],
+        stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
         ground.y - 45 * stumpScaleArray[i],
         25 * stumpScaleArray[i],
         15 * stumpScaleArray[i],
@@ -274,8 +280,9 @@ function draw() {
         0,
         90,
       );
+
       rect(
-        stumpArrayX[i] - 25 * stumpScaleArray[i],
+        stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
         ground.y - 90 * stumpScaleArray[i],
         15 * stumpScaleArray[i],
         45 * stumpScaleArray[i],
@@ -284,8 +291,9 @@ function draw() {
         0,
         0,
       );
+
       rect(
-        stumpArrayX[i] + 20 * stumpScaleArray[i],
+        stumpArrayX[i] + 10 * stumpScaleArray[i], // changed: +20 → +10
         ground.y - 60 * stumpScaleArray[i],
         20 * stumpScaleArray[i],
         15 * stumpScaleArray[i],
@@ -294,8 +302,9 @@ function draw() {
         90,
         0,
       );
+
       rect(
-        stumpArrayX[i] + 25 * stumpScaleArray[i],
+        stumpArrayX[i] + 15 * stumpScaleArray[i], // changed: +25 → +15
         ground.y - 100 * stumpScaleArray[i],
         15 * stumpScaleArray[i],
         50 * stumpScaleArray[i],
@@ -331,18 +340,22 @@ function draw() {
     //drawing of token and idea of it being a water bottle was from me
     //use of if and dist was from Sleuth practices where i applied the same concepts
 
-    for (let i = 0; i < waterbottleArray.length; i++) {
-      if (waterbottleArray[i].is_found == false) {
+    for (let i = 0; i < waterBottleArray.length; i++) {
+      if (waterBottleArray[i].isFound == false) {
         fill(255, 255, 255, 50);
-        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 30, 30);
+        ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 30, 30);
+
         fill(255, 255, 255, 40);
-        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 40, 40);
+        ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 40, 40);
+
         fill(255, 255, 255, 30);
-        ellipse(waterbottleArray[i].x + 5, waterbottleArray[i].y + 7, 50, 50);
+        ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 50, 50);
+
+        // Bottle body
         fill(0, 200, 255);
         rect(
-          waterbottleArray[i].x,
-          waterbottleArray[i].y,
+          waterBottleArray[i].x - 5,
+          waterBottleArray[i].y - 7.5,
           10,
           20,
           90,
@@ -350,10 +363,12 @@ function draw() {
           10,
           10,
         );
+
+        // Cap
         fill(255);
         rect(
-          waterbottleArray[i].x + 2.5,
-          waterbottleArray[i].y - 5,
+          waterBottleArray[i].x - 2.5,
+          waterBottleArray[i].y - 12.5,
           5,
           5,
           0,
@@ -361,18 +376,19 @@ function draw() {
           50,
           50,
         );
-        rect(waterbottleArray[i].x, waterbottleArray[i].y + 5, 10, 5);
 
+        // Label
+        rect(waterBottleArray[i].x - 5, waterBottleArray[i].y - 2.5, 10, 5);
         if (
           dist(
             gameChar.x,
             gameChar.y - 40,
-            waterbottleArray[i].x,
-            waterbottleArray[i].y,
-          ) < 40
+            waterBottleArray[i].x,
+            waterBottleArray[i].y,
+          ) < 25
         ) {
-          waterbottleArray[i].is_found = true;
-          waterbottlesFound++;
+          waterBottleArray[i].isFound = true;
+          waterBottlesFound++;
         }
       }
     }
@@ -790,7 +806,7 @@ function draw() {
       gameState = "GAME OVER";
       deathAlpha = 0;
     }
-    if (waterbottlesFound == waterbottleArray.length) {
+    if (waterBottlesFound == waterBottleArray.length) {
       gameState = "WIN";
       winAlpha = 0;
     }
@@ -813,9 +829,9 @@ function draw() {
     textFont("Papyrus");
     textAlign(RIGHT, TOP);
     text(
-      waterbottlesFound +
+      waterBottlesFound +
         "/" +
-        waterbottleArray.length +
+        waterBottleArray.length +
         " water bottles found!",
       windowWidth - 20,
       20,
@@ -842,6 +858,11 @@ function draw() {
     text("Riding Paused", windowWidth / 2, windowHeight / 2);
     textSize(20);
     text("Press ESC key to continue", windowWidth / 2, windowHeight / 2 + 200);
+    text(
+      "Press R key to return to main menu",
+      windowWidth / 2,
+      windowHeight / 2 + 300,
+    );
     //====================GAME OVER SCREEN======================================
     //end conditions and screen was done without any help
     //death screen inspired from popular game Dark Souls
@@ -852,23 +873,19 @@ function draw() {
       deathAlpha = 255;
     }
     fill(255, 50, 50, deathAlpha);
-    textSize(300);
+    textSize(windowHeight * 0.18);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
-    text("YOU DIED", windowWidth / 2, windowHeight / 2);
+    text("YOU DIED", windowWidth / 2, windowHeight * 0.4);
     textSize(20);
+    text("git gud", windowWidth / 2, windowHeight * 0.55);
+    text(
+      "Score:" + waterBottlesFound + "/" + waterBottleArray.length,
+      windowWidth / 2,
+      windowHeight * 0.68,
+    );
 
-    text("git gud", windowWidth / 2, windowHeight / 2 - 300);
-    text(
-      "Score:" + waterbottlesFound + "/" + waterbottleArray.length,
-      windowWidth / 2,
-      windowHeight / 2 - 500,
-    );
-    text(
-      "Press spacebar to try again",
-      windowWidth / 2,
-      windowHeight / 2 + 300,
-    );
+    text("Press spacebar to try again", windowWidth / 2, windowHeight * 0.82);
     //=========================win screen====================================================
   } else if (gameState == "WIN") {
     background(0);
@@ -876,26 +893,23 @@ function draw() {
     if (winAlpha > 255) {
       winAlpha = 255;
     }
-    textSize(300);
+    textSize(windowHeight * 0.18);
     fill(50, 255, 50, winAlpha);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
-    text("YOU WIN", windowWidth / 2, windowHeight / 2);
+    text("YOU WIN", windowWidth / 2, windowHeight * 0.4);
+
     textSize(20);
     text(
-      "Score:" + waterbottlesFound + "/" + waterbottleArray.length,
+      "Score:" + waterBottlesFound + "/" + waterBottleArray.length,
       windowWidth / 2,
-      windowHeight / 2 + 200,
+      windowHeight * 0.55,
     );
-    text(
-      "Press spacebar to try again!",
-      windowWidth / 2,
-      windowHeight / 2 + 300,
-    );
+    text("Press spacebar to try again!", windowWidth / 2, windowHeight * 0.68);
     text(
       "Press ESC key to return to main menu screen",
       windowWidth / 2,
-      windowHeight / 2 + 400,
+      windowHeight * 0.82,
     );
   }
 }
@@ -923,55 +937,67 @@ function keyPressed() {
       }
     } else if (keyCode == 27) {
       //ESCAPE key=pause the game
-
       gameState = "PAUSE";
     }
   } else if (gameState == "PAUSE") {
     if (keyCode == 27) {
       //ESCAPE key=continue playing the game again
       gameState = "PLAY";
+    } else if (keyCode == 82) {
+      gameChar.x = 100;
+      gameChar.y = ground.y;
+      gameChar.velocity = 0;
+      isJumping = false;
+      isPlummeting = false;
+      isLeft = false;
+      isRight = false;
+      waterBottlesFound = 0;
+      for (let i = 0; i < waterBottleArray.length; i++) {
+        waterBottleArray[i].isFound = false;
+      }
+      gameState = "START";
     }
   } else if (gameState == "WIN") {
     if (keyCode == 32) {
-      gameChar.x = 0;
+      gameChar.x = 100;
       gameChar.y = ground.y;
       gameChar.velocity = 0;
       isJumping = false;
       isPlummeting = false;
       isLeft = false;
       isRight = false;
-      waterbottlesFound = 0;
-      for (let i = 0; i < waterbottleArray.length; i++) {
-        waterbottleArray[i].is_found = false;
+      waterBottlesFound = 0;
+      for (let i = 0; i < waterBottleArray.length; i++) {
+        waterBottleArray[i].isFound = false;
       }
       gameState = "PLAY";
     } else if (keyCode == 27) {
-      gameChar.x = 0;
+      gameChar.x = 100;
       gameChar.y = ground.y;
       gameChar.velocity = 0;
       isJumping = false;
       isPlummeting = false;
       isLeft = false;
       isRight = false;
-      waterbottlesFound = 0;
-      for (let i = 0; i < waterbottleArray.length; i++) {
-        waterbottleArray[i].is_found = false;
+      waterBottlesFound = 0;
+      for (let i = 0; i < waterBottleArray.length; i++) {
+        waterBottleArray[i].isFound = false;
       }
       gameState = "START";
     }
   } else if (gameState == "GAME OVER" && keyCode == 32) {
     //spacebar on GAME OVER=reset everything and back to PLAY state
     //the execution for resetting the game was done with help from AI as i kept running into issues where it would break after resetting
-    gameChar.x = 0;
+    gameChar.x = 100;
     gameChar.y = ground.y;
     gameChar.velocity = 0;
     isJumping = false;
     isPlummeting = false;
     isLeft = false;
     isRight = false;
-    waterbottlesFound = 0;
-    for (let i = 0; i < waterbottleArray.length; i++) {
-      waterbottleArray[i].is_found = false;
+    waterBottlesFound = 0;
+    for (let i = 0; i < waterBottleArray.length; i++) {
+      waterBottleArray[i].isFound = false;
     }
     gameState = "PLAY";
   }
