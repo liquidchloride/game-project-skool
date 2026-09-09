@@ -78,9 +78,9 @@ function setup() {
   pitsArray = [];
   for (let i = 1; i < 8; i++) {
     pits = {
-      x: random(1000, 1500) * i, //spaced far and scaled with i to prevent overlap
+      x: random(100, 400) + 1000 * i, //spaced far and scaled with i to prevent overlap
       y: ground.y, //set y position for pits
-      width: random(100, 130), //randomise width for pits
+      width: random(180, 220), //randomise width for pits
     };
     pitsArray.push(pits);
   }
@@ -198,7 +198,7 @@ function draw() {
     drawCollectables();
     //=========================================draw GAME CHARACTER=================================================
     drawGameCharacter();
-    //=============JUMPING MECHANISM=======================
+    //=========================================JUMPING MECHANISM===============================
     //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
     //gravity and velocity mechanics were done after watching videos of gravity and velocity implementation on 2d side scrolling games, where the concept is the same
     //the troubleshooting for this was done with the help of AI where it simplified and explained it to me
@@ -227,6 +227,8 @@ function draw() {
         isPlummeting = true;
         gameChar.velocity = 0;
       }
+    } else if (!overPit && gameChar.y > ground.y) {
+      gameChar.y = ground.y;
     } //game character falling enough=game over
     if (isPlummeting && gameChar.y > windowHeight + 100) {
       lives--;
