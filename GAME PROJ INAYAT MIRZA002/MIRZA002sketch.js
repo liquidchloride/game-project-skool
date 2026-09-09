@@ -31,6 +31,7 @@ var deathAlpha;
 var winAlpha;
 var lives;
 var heartLoss;
+var endGoal;
 //in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterBottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
 //gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
@@ -52,7 +53,7 @@ function setup() {
   }
   //create array for 7 mountian ranges with random offset and scale
   mountainArray = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     mountain = {
       x: i * 1200 + random(100, 200), //spaced out but still random jitter
       scale: random(0.8, 1.5), //random scale
@@ -104,7 +105,12 @@ function setup() {
     waterBottleArray.push(waterBottle);
   }
   worldHeight = 1000;
-  worldWidth = 8000;
+  worldWidth = 9000;
+  endGoal = {
+    x: worldWidth - 300,
+    y: ground.y,
+    win: false,
+  };
   gameState = "START"; //make game state START by default
   lives = 3;
   heartLoss = {
@@ -196,6 +202,8 @@ function draw() {
     drawPits();
     //=========================================draw COLLECTABLE====================================================
     drawCollectables();
+    //=========================================draw END GOAL=======================================================
+    drawEndGoal();
     //=========================================draw GAME CHARACTER=================================================
     drawGameCharacter();
     //=========================================JUMPING MECHANISM===============================
@@ -1048,6 +1056,90 @@ function drawLifeLost() {
     gameState = "PLAY";
   }
 }
+function drawEndGoal() {
+  push();
+  //====================TENT====================
+  //tent body
+  noStroke();
+  fill(190, 150, 95);
+  triangle(
+    endGoal.x - 70,
+    endGoal.y,
+    endGoal.x,
+    endGoal.y - 90,
+    endGoal.x + 70,
+    endGoal.y,
+  );
+  //tent opening
+  fill(90, 60, 35);
+  triangle(
+    endGoal.x - 25,
+    endGoal.y,
+    endGoal.x,
+    endGoal.y - 75,
+    endGoal.x + 25,
+    endGoal.y,
+  );
+  //tent centre line
+  stroke(140, 100, 65);
+  line(endGoal.x, endGoal.y - 90, endGoal.x, endGoal.y - 75);
+  //====================CARGO BOXES====================
+  //bottom box
+  fill(145, 100, 55);
+  stroke(95, 65, 35);
+  strokeWeight(2);
+  rect(endGoal.x - 125, endGoal.y - 30, 45, 30);
+  //X on bottom box
+  line(endGoal.x - 125, endGoal.y - 30, endGoal.x - 80, endGoal.y);
+  line(endGoal.x - 80, endGoal.y - 30, endGoal.x - 125, endGoal.y);
+  //top box
+  fill(155, 110, 60);
+  rect(endGoal.x - 120, endGoal.y - 58, 40, 28);
+  //X on top box
+  line(endGoal.x - 120, endGoal.y - 58, endGoal.x - 80, endGoal.y - 30);
+  line(endGoal.x - 80, endGoal.y - 58, endGoal.x - 120, endGoal.y - 30);
+  //====================TABLE====================
+  noStroke();
+  fill(115, 75, 40);
+  //table top
+  rect(endGoal.x + 40, endGoal.y - 38, 45, 6);
+  //table legs
+  rect(endGoal.x + 45, endGoal.y - 32, 5, 32);
+  rect(endGoal.x + 75, endGoal.y - 32, 5, 32);
+  //====================RADIO====================
+  fill(65);
+  rect(endGoal.x + 51, endGoal.y - 55, 25, 17, 2);
+  //speaker
+  fill(35);
+  ellipse(endGoal.x + 58, endGoal.y - 46, 9, 9);
+  //dial
+  fill(180);
+  ellipse(endGoal.x + 70, endGoal.y - 46, 4, 4);
+  //antenna
+  stroke(50);
+  strokeWeight(2);
+  line(endGoal.x + 73, endGoal.y - 55, endGoal.x + 79, endGoal.y - 70);
+  //====================WATER TANK STAND====================
+  noStroke();
+  fill(110, 75, 40);
+  //support
+  rect(endGoal.x + 102, endGoal.y - 30, 41, 6);
+  //legs
+  rect(endGoal.x + 106, endGoal.y - 24, 5, 24);
+  rect(endGoal.x + 134, endGoal.y - 24, 5, 24);
+  //====================EMPTY WATER TANK====================
+  fill(120, 145, 150);
+  rect(endGoal.x + 105, endGoal.y - 80, 35, 50, 5);
+  //tank top
+  fill(100, 125, 130);
+  ellipse(endGoal.x + 122.5, endGoal.y - 80, 35, 10);
+  //empty label
+  fill(50);
+  textSize(9);
+  textAlign(CENTER, CENTER);
+  text("EMPTY", endGoal.x + 122.5, endGoal.y - 55);
+  pop();
+}
 function keyPressed() {
   //for both functions keyPressed and KeyReleased, the progress on sleuth really helped me as it had quite a few cases utilising these two functions
   //aid also taken from game project template where the functions were already done up for me
@@ -1062,7 +1154,7 @@ function keyPressed() {
       //D key=move right
       isRight = true;
     } else if (keyCode == 65) {
-      //A key=move left
+      //A key=move left You're not talking barby hello
       isLeft = true;
     } else if (keyCode == 87) {
       //W key=jump up but only if not already jumping or falling
