@@ -31,7 +31,9 @@ var deathAlpha;
 var winAlpha;
 var lives;
 var heartLoss;
-var endGoal;
+var outpost;
+var tank;
+var scorpionArray;
 //in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterBottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
 //gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
@@ -106,10 +108,10 @@ function setup() {
   }
   worldHeight = 1000;
   worldWidth = 9000;
-  endGoal = {
+  outpost = {
     x: worldWidth - 300,
     y: ground.y,
-    win: false,
+    reached: false,
   };
   gameState = "START"; //make game state START by default
   lives = 3;
@@ -121,6 +123,21 @@ function setup() {
     y: windowHeight / 2,
     size: 200,
   };
+  tank = {
+    x: windowWidth / 2,
+    y: windowHeight * 0.78,
+    width: 200,
+    height: 280,
+    waterHeight: 0,
+  };
+  scorpionArray = [];
+  scorpionArray.push(new Scorpion(1700, ground.y, 120));
+  scorpionArray.push(new Scorpion(2700, ground.y, 140));
+  scorpionArray.push(new Scorpion(3700, ground.y, 100));
+  scorpionArray.push(new Scorpion(4700, ground.y, 150));
+  scorpionArray.push(new Scorpion(5700, ground.y, 120));
+  scorpionArray.push(new Scorpion(6700, ground.y, 140));
+  scorpionArray.push(new Scorpion(7900, ground.y, 180));
 }
 
 function draw() {
@@ -206,6 +223,8 @@ function draw() {
     drawEndGoal();
     //=========================================draw GAME CHARACTER=================================================
     drawGameCharacter();
+    //=========================================draw SCORPIONS======================================================
+    drawScorpions();
     //=========================================JUMPING MECHANISM===============================
     //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
     //gravity and velocity mechanics were done after watching videos of gravity and velocity implementation on 2d side scrolling games, where the concept is the same
@@ -248,10 +267,7 @@ function draw() {
         deathAlpha = 0;
       }
     }
-    if (waterBottlesFound == waterBottleArray.length) {
-      gameState = "WIN";
-      winAlpha = 0;
-    }
+    checkOutpostReached();
     pop(); //sidescrolling element end
     //============================================================HUD===========================================
     //drawn after world creation to be visible always
@@ -344,20 +360,20 @@ function draw() {
     fill(50, 255, 50, winAlpha);
     textFont("Papyrus");
     textAlign(CENTER, CENTER);
-    text("YOU WIN", windowWidth / 2, windowHeight * 0.4);
-
+    text("YOU WIN", windowWidth / 2, windowHeight * 0.25);
     textSize(20);
     text(
-      "Score:" + waterBottlesFound + "/" + waterBottleArray.length,
+      "Water delivered: " + waterBottlesFound + "/" + waterBottleArray.length,
       windowWidth / 2,
-      windowHeight * 0.55,
+      windowHeight * 0.42,
     );
-    text("Press spacebar to try again!", windowWidth / 2, windowHeight * 0.68);
+    text("Press spacebar to try again!", windowWidth / 2, windowHeight * 0.9);
     text(
       "Press ESC key to return to main menu screen",
       windowWidth / 2,
-      windowHeight * 0.82,
+      windowHeight * 0.95,
     );
+    drawWinTank();
   }
 }
 //=====================================CLOUDS(fixed to screen,move independently of camera moving)================================================
@@ -981,7 +997,7 @@ function resetGame() {
   isRight = false;
 
   waterBottlesFound = 0;
-
+  outpost.reached = false;
   for (let i = 0; i < waterBottleArray.length; i++) {
     waterBottleArray[i].isFound = false;
   }
@@ -1063,82 +1079,221 @@ function drawEndGoal() {
   noStroke();
   fill(190, 150, 95);
   triangle(
-    endGoal.x - 70,
-    endGoal.y,
-    endGoal.x,
-    endGoal.y - 90,
-    endGoal.x + 70,
-    endGoal.y,
+    outpost.x - 70,
+    outpost.y,
+    outpost.x,
+    outpost.y - 90,
+    outpost.x + 70,
+    outpost.y,
   );
   //tent opening
   fill(90, 60, 35);
   triangle(
-    endGoal.x - 25,
-    endGoal.y,
-    endGoal.x,
-    endGoal.y - 75,
-    endGoal.x + 25,
-    endGoal.y,
+    outpost.x - 25,
+    outpost.y,
+    outpost.x,
+    outpost.y - 75,
+    outpost.x + 25,
+    outpost.y,
   );
   //tent centre line
   stroke(140, 100, 65);
-  line(endGoal.x, endGoal.y - 90, endGoal.x, endGoal.y - 75);
+  line(outpost.x, outpost.y - 90, outpost.x, outpost.y - 75);
   //====================CARGO BOXES====================
   //bottom box
   fill(145, 100, 55);
   stroke(95, 65, 35);
   strokeWeight(2);
-  rect(endGoal.x - 125, endGoal.y - 30, 45, 30);
+  rect(outpost.x - 125, outpost.y - 30, 45, 30);
   //X on bottom box
-  line(endGoal.x - 125, endGoal.y - 30, endGoal.x - 80, endGoal.y);
-  line(endGoal.x - 80, endGoal.y - 30, endGoal.x - 125, endGoal.y);
+  line(outpost.x - 125, outpost.y - 30, outpost.x - 80, outpost.y);
+  line(outpost.x - 80, outpost.y - 30, outpost.x - 125, outpost.y);
   //top box
   fill(155, 110, 60);
-  rect(endGoal.x - 120, endGoal.y - 58, 40, 28);
+  rect(outpost.x - 120, outpost.y - 58, 40, 28);
   //X on top box
-  line(endGoal.x - 120, endGoal.y - 58, endGoal.x - 80, endGoal.y - 30);
-  line(endGoal.x - 80, endGoal.y - 58, endGoal.x - 120, endGoal.y - 30);
+  line(outpost.x - 120, outpost.y - 58, outpost.x - 80, outpost.y - 30);
+  line(outpost.x - 80, outpost.y - 58, outpost.x - 120, outpost.y - 30);
   //====================TABLE====================
   noStroke();
   fill(115, 75, 40);
   //table top
-  rect(endGoal.x + 40, endGoal.y - 38, 45, 6);
+  rect(outpost.x + 40, outpost.y - 38, 45, 6);
   //table legs
-  rect(endGoal.x + 45, endGoal.y - 32, 5, 32);
-  rect(endGoal.x + 75, endGoal.y - 32, 5, 32);
+  rect(outpost.x + 45, outpost.y - 32, 5, 32);
+  rect(outpost.x + 75, outpost.y - 32, 5, 32);
   //====================RADIO====================
   fill(65);
-  rect(endGoal.x + 51, endGoal.y - 55, 25, 17, 2);
+  rect(outpost.x + 51, outpost.y - 55, 25, 17, 2);
   //speaker
   fill(35);
-  ellipse(endGoal.x + 58, endGoal.y - 46, 9, 9);
+  ellipse(outpost.x + 58, outpost.y - 46, 9, 9);
   //dial
   fill(180);
-  ellipse(endGoal.x + 70, endGoal.y - 46, 4, 4);
+  ellipse(outpost.x + 70, outpost.y - 46, 4, 4);
   //antenna
   stroke(50);
   strokeWeight(2);
-  line(endGoal.x + 73, endGoal.y - 55, endGoal.x + 79, endGoal.y - 70);
+  line(outpost.x + 73, outpost.y - 55, outpost.x + 79, outpost.y - 70);
   //====================WATER TANK STAND====================
   noStroke();
   fill(110, 75, 40);
   //support
-  rect(endGoal.x + 102, endGoal.y - 30, 41, 6);
+  rect(outpost.x + 102, outpost.y - 30, 41, 6);
   //legs
-  rect(endGoal.x + 106, endGoal.y - 24, 5, 24);
-  rect(endGoal.x + 134, endGoal.y - 24, 5, 24);
+  rect(outpost.x + 106, outpost.y - 24, 5, 24);
+  rect(outpost.x + 134, outpost.y - 24, 5, 24);
   //====================EMPTY WATER TANK====================
   fill(120, 145, 150);
-  rect(endGoal.x + 105, endGoal.y - 80, 35, 50, 5);
+  rect(outpost.x + 105, outpost.y - 80, 35, 50, 5);
   //tank top
   fill(100, 125, 130);
-  ellipse(endGoal.x + 122.5, endGoal.y - 80, 35, 10);
+  ellipse(outpost.x + 122.5, outpost.y - 80, 35, 10);
   //empty label
   fill(50);
   textSize(9);
   textAlign(CENTER, CENTER);
-  text("EMPTY", endGoal.x + 122.5, endGoal.y - 55);
+  text("EMPTY", outpost.x + 122.5, outpost.y - 55);
   pop();
+}
+function checkOutpostReached() {
+  if (gameChar.x > outpost.x - 60 && gameChar.x < outpost.x + 60) {
+    outpost.reached = true;
+    gameState = "WIN";
+    winAlpha = 0;
+  }
+}
+function drawWinTank() {
+  push();
+  tank.waterHeight =
+    ((tank.height - 10) * waterBottlesFound) / waterBottleArray.length;
+  noStroke();
+  fill(110, 75, 40);
+  //support
+  rect(tank.x - 55, tank.y, 110, 10);
+  //legs
+  rect(tank.x - 45, tank.y + 10, 10, 35);
+  rect(tank.x + 35, tank.y + 10, 10, 35);
+  fill(0, 150, 220);
+  rect(
+    tank.x - tank.width / 2 + 5,
+    tank.y - 5 - tank.waterHeight,
+    tank.width - 10,
+    tank.waterHeight,
+  );
+  noFill();
+  stroke(150);
+  strokeWeight(5);
+  rect(
+    tank.x - tank.width / 2,
+    tank.y - tank.height,
+    tank.width,
+    tank.height,
+    10,
+  );
+  ellipse(tank.x, tank.y - tank.height, tank.width, 20);
+  pop();
+}
+function Scorpion(x, y, range) {
+  this.x = x;
+  this.y = y;
+  this.range = range;
+  this.currentX = x;
+  this.speed = 1;
+  this.update = function () {
+    this.currentX += this.speed;
+    if (this.currentX > this.x + this.range || this.currentX < this.x) {
+      this.speed = this.speed * -1;
+    }
+  };
+  this.draw = function () {
+    push();
+    //flip scorpion when moving left
+    if (this.speed < 0) {
+      translate(this.currentX * 2, 0);
+      scale(-1, 1);
+    }
+    //====================LEGS====================
+    stroke(25);
+    strokeWeight(2);
+    //left legs
+    line(this.currentX - 10, this.y - 10, this.currentX - 22, this.y - 2);
+    line(this.currentX - 4, this.y - 11, this.currentX - 16, this.y + 2);
+    line(this.currentX + 2, this.y - 11, this.currentX - 8, this.y + 4);
+    //right legs
+    line(this.currentX + 10, this.y - 10, this.currentX + 22, this.y - 2);
+    line(this.currentX + 4, this.y - 11, this.currentX + 16, this.y + 2);
+    line(this.currentX - 2, this.y - 11, this.currentX + 8, this.y + 4);
+    //====================TAIL====================
+    stroke(20);
+    strokeWeight(6);
+    line(this.currentX - 14, this.y - 14, this.currentX - 24, this.y - 24);
+    line(this.currentX - 24, this.y - 24, this.currentX - 18, this.y - 36);
+    line(this.currentX - 18, this.y - 36, this.currentX - 4, this.y - 40);
+    //stinger
+    noStroke();
+    fill(10);
+    ellipse(this.currentX, this.y - 40, 10, 10);
+    triangle(
+      this.currentX,
+      this.y - 35,
+      this.currentX,
+      this.y - 45,
+      this.currentX + 20,
+      this.y - 30,
+    );
+    //====================CLAWS====================
+    stroke(25);
+    strokeWeight(4);
+    //top claw
+    line(this.currentX + 18, this.y - 14, this.currentX + 30, this.y - 20);
+    line(this.currentX + 30, this.y - 20, this.currentX + 36, this.y - 26);
+    line(this.currentX + 30, this.y - 20, this.currentX + 39, this.y - 18);
+    //bottom claw
+    line(this.currentX + 18, this.y - 10, this.currentX + 30, this.y - 5);
+    line(this.currentX + 30, this.y - 5, this.currentX + 38, this.y - 1);
+    line(this.currentX + 30, this.y - 5, this.currentX + 37, this.y - 10);
+    //====================BODY====================
+    noStroke();
+    //main body
+    fill(35);
+    ellipse(this.currentX, this.y - 12, 30, 18);
+    //back segment
+    fill(25);
+    ellipse(this.currentX - 10, this.y - 13, 16, 14);
+    //head/front segment
+    fill(45);
+    ellipse(this.currentX + 14, this.y - 12, 14, 12);
+    //eyes
+    fill(180, 30, 30);
+    ellipse(this.currentX + 16, this.y - 14, 2, 2);
+    ellipse(this.currentX + 20, this.y - 14, 2, 2);
+    pop();
+  };
+  this.checkContact = function (gameCharX, gameCharY) {
+    var distance = dist(gameCharX, gameCharY - 30, this.currentX, this.y - 12);
+    if (distance < 30) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+}
+function drawScorpions() {
+  for (let i = 0; i < scorpionArray.length; i++) {
+    scorpionArray[i].update();
+    scorpionArray[i].draw();
+    if (scorpionArray[i].checkContact(gameChar.x, gameChar.y)) {
+      lives--;
+      if (lives > 0) {
+        heartLoss.timer = 0;
+        gameState = "LIFE LOST";
+      } else {
+        gameState = "GAME OVER";
+        deathAlpha = 0;
+      }
+    }
+  }
 }
 function keyPressed() {
   //for both functions keyPressed and KeyReleased, the progress on sleuth really helped me as it had quite a few cases utilising these two functions
@@ -1154,7 +1309,7 @@ function keyPressed() {
       //D key=move right
       isRight = true;
     } else if (keyCode == 65) {
-      //A key=move left You're not talking barby hello
+      //A key=move left
       isLeft = true;
     } else if (keyCode == 87) {
       //W key=jump up but only if not already jumping or falling
