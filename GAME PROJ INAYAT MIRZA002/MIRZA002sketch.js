@@ -34,6 +34,7 @@ var heartLoss;
 var outpost;
 var tank;
 var scorpionArray;
+var flagpole;
 //in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterBottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
 //gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
@@ -63,15 +64,14 @@ function setup() {
     mountainArray.push(mountain);
   }
   //create array for base of 26 cacti with random offset and sclae
-  stumpArrayX = [
-    180, 520, 740, 1160, 1310, 1800, 1990, 2350, 2530, 2980, 3160, 3520, 3700,
-    4170, 4350, 4790, 4980, 5340, 5520, 5960, 6200, 6440, 6880, 7060, 7430,
-    7690,
-  ];
-  stumpScaleArray = [
-    0.7, 1.2, 0.9, 1.4, 0.6, 1.1, 0.8, 1.3, 0.7, 1.0, 1.2, 0.9, 1.4, 0.6, 1.1,
-    0.8, 1.3, 0.7, 1.0, 1.2, 0.9, 1.4, 0.6, 1.1, 0.8, 1.3,
-  ];
+  stumpArrayX = [];
+  for (let i = 0; i < 28; i++) {
+    stumpArrayX.push(i * 400 + random(100, 250));
+  }
+  stumpScaleArray = [];
+  for (let i = 0; i < stumpArrayX.length; i++) {
+    stumpScaleArray.push(random(1, 1.5));
+  }
   //create ground object to make code cleaner
   ground = {
     y: (windowHeight * 6) / 8, //ground always 6/8 of window height
@@ -98,9 +98,9 @@ function setup() {
   jumpStrength = -6; //how high game character can jump
   waterBottleArray = [];
   waterBottlesFound = 0;
-  for (let i = 1; i < 11; i++) {
+  for (let i = 1; i < 16; i++) {
     waterBottle = {
-      x: 600 * i + random(1, 100), //waterBottle x pos every 600px w random offset
+      x: 550 * i + random(1, 100), //waterBottle x pos every 600px w random offset
       y: ground.y - 50 - random(1, 50), //waterBottle abit higher than ground and offset
       isFound: false,
     };
@@ -111,7 +111,6 @@ function setup() {
   outpost = {
     x: worldWidth - 300,
     y: ground.y,
-    reached: false,
   };
   gameState = "START"; //make game state START by default
   lives = 3;
@@ -130,14 +129,23 @@ function setup() {
     height: 280,
     waterHeight: 0,
   };
+  flagpole = {
+    x: outpost.x + 180,
+    y: ground.y,
+    flagY: ground.y - 40,
+    topY: ground.y - 170,
+    raising: false,
+    isUP: false,
+    delay: 0,
+  };
   scorpionArray = [];
-  scorpionArray.push(new Scorpion(1700, ground.y, 120));
-  scorpionArray.push(new Scorpion(2700, ground.y, 140));
-  scorpionArray.push(new Scorpion(3700, ground.y, 100));
-  scorpionArray.push(new Scorpion(4700, ground.y, 150));
-  scorpionArray.push(new Scorpion(5700, ground.y, 120));
-  scorpionArray.push(new Scorpion(6700, ground.y, 140));
-  scorpionArray.push(new Scorpion(7900, ground.y, 180));
+  scorpionArray.push(new Scorpion(1700, ground.y, 200));
+  scorpionArray.push(new Scorpion(2700, ground.y, 200));
+  scorpionArray.push(new Scorpion(3700, ground.y, 200));
+  scorpionArray.push(new Scorpion(4700, ground.y, 200));
+  scorpionArray.push(new Scorpion(5700, ground.y, 200));
+  scorpionArray.push(new Scorpion(6700, ground.y, 200));
+  scorpionArray.push(new Scorpion(7900, ground.y, 200));
 }
 
 function draw() {
@@ -221,6 +229,10 @@ function draw() {
     drawCollectables();
     //=========================================draw END GOAL=======================================================
     drawEndGoal();
+    //=========================================draw,check,update FLAGPOLE==========================================
+    checkFlagpole();
+    updateFlagpole();
+    drawFlagpole();
     //=========================================draw GAME CHARACTER=================================================
     drawGameCharacter();
     //=========================================draw SCORPIONS======================================================
@@ -267,7 +279,6 @@ function draw() {
         deathAlpha = 0;
       }
     }
-    checkOutpostReached();
     pop(); //sidescrolling element end
     //============================================================HUD===========================================
     //drawn after world creation to be visible always
@@ -389,21 +400,18 @@ function drawClouds() {
       180 * cloudArray[i].pos.scale,
       50 * cloudArray[i].pos.scale,
     );
-
     ellipse(
       cloudArray[i].pos.x - 90 * cloudArray[i].pos.scale,
       cloudArray[i].pos.y,
       100 * cloudArray[i].pos.scale,
       100 * cloudArray[i].pos.scale,
     );
-
     ellipse(
       cloudArray[i].pos.x,
       cloudArray[i].pos.y,
       100 * cloudArray[i].pos.scale,
       100 * cloudArray[i].pos.scale,
     );
-
     ellipse(
       cloudArray[i].pos.x + 90 * cloudArray[i].pos.scale,
       cloudArray[i].pos.y,
@@ -434,7 +442,6 @@ function drawMountains() {
       mountainArray[i].x + 150 * mountainArray[i].scale,
       ground.y,
     );
-
     // Left mountain
     fill(140, 76, 48);
     triangle(
@@ -445,7 +452,6 @@ function drawMountains() {
       mountainArray[i].x,
       ground.y,
     );
-
     // Right mountain
     triangle(
       mountainArray[i].x,
@@ -463,7 +469,6 @@ function drawCacti() {
   //same as mountains,previously done in scenery template and transfered over
   for (let i = 0; i < stumpArrayX.length; i++) {
     fill(67, 124, 79);
-
     rect(
       stumpArrayX[i] - 10 * stumpScaleArray[i], // changed: 0 → -10
       ground.y - 80 * stumpScaleArray[i],
@@ -474,7 +479,6 @@ function drawCacti() {
       0,
       0,
     );
-
     rect(
       stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
       ground.y - 45 * stumpScaleArray[i],
@@ -485,7 +489,6 @@ function drawCacti() {
       0,
       90,
     );
-
     rect(
       stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
       ground.y - 90 * stumpScaleArray[i],
@@ -496,7 +499,6 @@ function drawCacti() {
       0,
       0,
     );
-
     rect(
       stumpArrayX[i] + 10 * stumpScaleArray[i], // changed: +20 → +10
       ground.y - 60 * stumpScaleArray[i],
@@ -507,7 +509,6 @@ function drawCacti() {
       90,
       0,
     );
-
     rect(
       stumpArrayX[i] + 15 * stumpScaleArray[i], // changed: +25 → +15
       ground.y - 100 * stumpScaleArray[i],
@@ -517,7 +518,54 @@ function drawCacti() {
       90,
       0,
       0,
+    ); //darker side of cactus
+    fill(45, 95, 60);
+    rect(
+      stumpArrayX[i] + 3 * stumpScaleArray[i],
+      ground.y - 80 * stumpScaleArray[i],
+      7 * stumpScaleArray[i],
+      80 * stumpScaleArray[i],
+      0,
+      90,
+      0,
+      0,
     );
+    //thorns
+    stroke(230, 220, 180);
+    strokeWeight(1);
+    //left thorns
+    line(
+      stumpArrayX[i] - 10 * stumpScaleArray[i],
+      ground.y - 25 * stumpScaleArray[i],
+      stumpArrayX[i] - 17 * stumpScaleArray[i],
+      ground.y - 28 * stumpScaleArray[i],
+    );
+    line(
+      stumpArrayX[i] - 10 * stumpScaleArray[i],
+      ground.y - 50 * stumpScaleArray[i],
+      stumpArrayX[i] - 17 * stumpScaleArray[i],
+      ground.y - 53 * stumpScaleArray[i],
+    );
+    line(
+      stumpArrayX[i] - 10 * stumpScaleArray[i],
+      ground.y - 70 * stumpScaleArray[i],
+      stumpArrayX[i] - 17 * stumpScaleArray[i],
+      ground.y - 73 * stumpScaleArray[i],
+    );
+    //right thorns
+    line(
+      stumpArrayX[i] + 10 * stumpScaleArray[i],
+      ground.y - 35 * stumpScaleArray[i],
+      stumpArrayX[i] + 17 * stumpScaleArray[i],
+      ground.y - 38 * stumpScaleArray[i],
+    );
+    line(
+      stumpArrayX[i] + 10 * stumpScaleArray[i],
+      ground.y - 60 * stumpScaleArray[i],
+      stumpArrayX[i] + 17 * stumpScaleArray[i],
+      ground.y - 63 * stumpScaleArray[i],
+    );
+    noStroke();
   }
 }
 function drawPits() {
@@ -527,6 +575,7 @@ function drawPits() {
   //idea for use of overPit logic was helped by AI in shortening my code as I initialy used another longer roundabout method, but implementation was still done by me.
   overPit = false;
   for (let i = 0; i < pitsArray.length; i++) {
+    //main pit
     fill(92, 58, 38);
     rect(
       pitsArray[i].x,
@@ -534,6 +583,54 @@ function drawPits() {
       pitsArray[i].width,
       windowHeight - ground.y,
     );
+    fill(45, 30, 25);
+    rect(
+      pitsArray[i].x + 12,
+      pitsArray[i].y + 8,
+      pitsArray[i].width - 24,
+      windowHeight - ground.y,
+    );
+    fill(125, 80, 50);
+    triangle(
+      pitsArray[i].x,
+      pitsArray[i].y,
+      pitsArray[i].x + 25,
+      pitsArray[i].y,
+      pitsArray[i].x + 12,
+      pitsArray[i].y + 18,
+    );
+    triangle(
+      pitsArray[i].x + 20,
+      pitsArray[i].y,
+      pitsArray[i].x + 45,
+      pitsArray[i].y,
+      pitsArray[i].x + 32,
+      pitsArray[i].y + 14,
+    );
+    triangle(
+      pitsArray[i].x + pitsArray[i].width - 25,
+      pitsArray[i].y,
+      pitsArray[i].x + pitsArray[i].width,
+      pitsArray[i].y,
+      pitsArray[i].x + pitsArray[i].width - 12,
+      pitsArray[i].y + 18,
+    );
+    triangle(
+      pitsArray[i].x + pitsArray[i].width - 45,
+      pitsArray[i].y,
+      pitsArray[i].x + pitsArray[i].width - 20,
+      pitsArray[i].y,
+      pitsArray[i].x + pitsArray[i].width - 32,
+      pitsArray[i].y + 14,
+    );
+    fill(255, 80, 0);
+    rect(pitsArray[i].x, windowHeight - 35, pitsArray[i].width, 35);
+    fill(255, 180, 0);
+    rect(pitsArray[i].x, windowHeight - 35, pitsArray[i].width, 8);
+    fill(255, 220, 50);
+    ellipse(pitsArray[i].x + 30, windowHeight - 32, 12, 6);
+    ellipse(pitsArray[i].x + pitsArray[i].width / 2, windowHeight - 30, 16, 7);
+    ellipse(pitsArray[i].x + pitsArray[i].width - 25, windowHeight - 33, 10, 5);
     if (
       gameChar.x > pitsArray[i].x + 15 &&
       gameChar.x < pitsArray[i].x + pitsArray[i].width - 15
@@ -997,7 +1094,10 @@ function resetGame() {
   isRight = false;
 
   waterBottlesFound = 0;
-  outpost.reached = false;
+  flagpole.flagY = ground.y - 40;
+  flagpole.raising = false;
+  flagpole.isUP = false;
+  flagpole.delay = 0;
   for (let i = 0; i < waterBottleArray.length; i++) {
     waterBottleArray[i].isFound = false;
   }
@@ -1156,9 +1256,50 @@ function drawEndGoal() {
   text("EMPTY", outpost.x + 122.5, outpost.y - 55);
   pop();
 }
-function checkOutpostReached() {
-  if (gameChar.x > outpost.x - 60 && gameChar.x < outpost.x + 60) {
-    outpost.reached = true;
+function drawFlagpole() {
+  push();
+  //pole
+  stroke(70);
+  strokeWeight(5);
+  line(flagpole.x, flagpole.y, flagpole.x, flagpole.y - 190);
+  //ball at top
+  noStroke();
+  fill(200);
+  ellipse(flagpole.x, flagpole.y - 190, 10, 10);
+  //flag
+  fill(180, 30, 30);
+  triangle(
+    flagpole.x,
+    flagpole.flagY,
+    flagpole.x + 50,
+    flagpole.flagY + 15,
+    flagpole.x,
+    flagpole.flagY + 30,
+  );
+  pop();
+}
+function checkFlagpole() {
+  if (
+    gameChar.x > outpost.x - 60 &&
+    gameChar.x < outpost.x + 60 &&
+    flagpole.isUP == false
+  ) {
+    flagpole.raising = true;
+  }
+}
+function updateFlagpole() {
+  if (flagpole.raising == true) {
+    flagpole.flagY -= 2;
+    if (flagpole.flagY <= flagpole.topY) {
+      flagpole.flagY = flagpole.topY;
+      flagpole.raising = false;
+      flagpole.isUP = true;
+    }
+  }
+  if (flagpole.isUP == true) {
+    flagpole.delay++;
+  }
+  if (flagpole.delay >= 60) {
     gameState = "WIN";
     winAlpha = 0;
   }
@@ -1271,8 +1412,8 @@ function Scorpion(x, y, range) {
     pop();
   };
   this.checkContact = function (gameCharX, gameCharY) {
-    var distance = dist(gameCharX, gameCharY - 30, this.currentX, this.y - 12);
-    if (distance < 30) {
+    var distance = dist(gameCharX, gameCharY - 25, this.currentX, this.y - 12);
+    if (distance < 45) {
       return true;
     } else {
       return false;
