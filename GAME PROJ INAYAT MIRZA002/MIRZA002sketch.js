@@ -59,7 +59,7 @@ function setup() {
   for (let i = 0; i < 8; i++) {
     mountain = {
       x: i * 1200 + random(100, 200), //spaced out but still random jitter
-      scale: random(0.8, 1.5), //random scale
+      scale: random(2, 3), //random scale
     };
     mountainArray.push(mountain);
   }
@@ -219,8 +219,8 @@ function draw() {
     fill(237, 201, 138);
     rect(0, ground.y, worldWidth, (windowHeight * 2) / 8); //draw some green ground
 
-    //=========================================draw MOUNTAINS======================================================
-    drawMountains();
+    //=========================================draw PYRAMIDS======================================================
+    drawPyramids();
     //=========================================draw CACTI==========================================================
     drawCacti();
     //=========================================draw PITS===========================================================
@@ -427,40 +427,54 @@ function drawClouds() {
     }
   }
 }
-//========================MOUNTAINS========================================================================================
+//========================PYRAMIDS========================================================================================
 //3 triangles to replicate a mountain range
 //same as clouds, where previously already done up.
-function drawMountains() {
+function drawPyramids() {
   for (let i = 0; i < mountainArray.length; i++) {
-    // Middle mountain
-    fill(196, 132, 90);
+    var x = mountainArray[i].x;
+    var s = mountainArray[i].scale;
+    //====================MAIN PYRAMID====================
+    //light side
+    fill(210, 170, 105);
+    triangle(x - 180 * s, ground.y, x, ground.y - 220 * s, x, ground.y);
+    //dark side
+    fill(165, 120, 75);
+    triangle(x, ground.y - 220 * s, x, ground.y, x + 180 * s, ground.y);
+    //====================SMALL PYRAMID====================
+    fill(195, 150, 90);
     triangle(
-      mountainArray[i].x - 150 * mountainArray[i].scale,
+      x + 160 * s,
       ground.y,
-      mountainArray[i].x,
-      ground.y - ((windowHeight * 3) / 8) * mountainArray[i].scale,
-      mountainArray[i].x + 150 * mountainArray[i].scale,
+      x + 260 * s,
+      ground.y - 130 * s,
+      x + 260 * s,
       ground.y,
     );
-    // Left mountain
-    fill(140, 76, 48);
+    fill(145, 100, 65);
     triangle(
-      mountainArray[i].x - 300 * mountainArray[i].scale,
+      x + 260 * s,
+      ground.y - 130 * s,
+      x + 260 * s,
       ground.y,
-      mountainArray[i].x - 150 * mountainArray[i].scale,
-      ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
-      mountainArray[i].x,
+      x + 360 * s,
       ground.y,
     );
-    // Right mountain
-    triangle(
-      mountainArray[i].x,
-      ground.y,
-      mountainArray[i].x + 150 * mountainArray[i].scale,
-      ground.y - ((windowHeight * 4) / 8) * mountainArray[i].scale,
-      mountainArray[i].x + 300 * mountainArray[i].scale,
-      ground.y,
-    );
+    //====================PYRAMID DETAIL LINES====================
+    stroke(120, 85, 55);
+    strokeWeight(2);
+    // Main pyramid - horizontal lines
+    line(x - 135 * s, ground.y - 55 * s, x + 135 * s, ground.y - 55 * s);
+    line(x - 90 * s, ground.y - 110 * s, x + 90 * s, ground.y - 110 * s);
+    line(x - 45 * s, ground.y - 165 * s, x + 45 * s, ground.y - 165 * s);
+    // Main pyramid - vertical/slanted section lines
+    line(x - 90 * s, ground.y, x - 45 * s, ground.y - 110 * s);
+    line(x + 90 * s, ground.y, x + 45 * s, ground.y - 110 * s);
+    // Small pyramid - horizontal lines
+    line(x + 188 * s, ground.y - 35 * s, x + 332 * s, ground.y - 35 * s);
+    line(x + 213 * s, ground.y - 70 * s, x + 307 * s, ground.y - 70 * s);
+    line(x + 238 * s, ground.y - 100 * s, x + 282 * s, ground.y - 100 * s);
+    noStroke();
   }
 }
 function drawCacti() {
@@ -518,7 +532,7 @@ function drawCacti() {
       90,
       0,
       0,
-    ); //darker side of cactus
+    );
     fill(45, 95, 60);
     rect(
       stumpArrayX[i] + 3 * stumpScaleArray[i],
@@ -530,10 +544,8 @@ function drawCacti() {
       0,
       0,
     );
-    //thorns
     stroke(230, 220, 180);
     strokeWeight(1);
-    //left thorns
     line(
       stumpArrayX[i] - 10 * stumpScaleArray[i],
       ground.y - 25 * stumpScaleArray[i],
@@ -552,7 +564,6 @@ function drawCacti() {
       stumpArrayX[i] - 17 * stumpScaleArray[i],
       ground.y - 73 * stumpScaleArray[i],
     );
-    //right thorns
     line(
       stumpArrayX[i] + 10 * stumpScaleArray[i],
       ground.y - 35 * stumpScaleArray[i],
@@ -642,18 +653,14 @@ function drawPits() {
 function drawCollectables() {
   //drawing of token and idea of it being a water bottle was from me
   //use of if and dist was from Sleuth practices where i applied the same concepts
-
   for (let i = 0; i < waterBottleArray.length; i++) {
     if (waterBottleArray[i].isFound == false) {
       fill(255, 255, 255, 50);
       ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 30, 30);
-
       fill(255, 255, 255, 40);
       ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 40, 40);
-
       fill(255, 255, 255, 30);
       ellipse(waterBottleArray[i].x, waterBottleArray[i].y, 50, 50);
-
       // Bottle body
       fill(0, 200, 255);
       rect(
@@ -666,7 +673,6 @@ function drawCollectables() {
         10,
         10,
       );
-
       // Cap
       fill(255);
       rect(
@@ -679,7 +685,6 @@ function drawCollectables() {
         50,
         50,
       );
-
       // Label
       rect(waterBottleArray[i].x - 5, waterBottleArray[i].y - 2.5, 10, 5);
       if (
@@ -746,7 +751,6 @@ function drawGameCharacter() {
     //torso
     fill(180, 120, 60);
     rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
-
     //arms right
     fill(210, 170, 120);
     quad(
@@ -759,7 +763,6 @@ function drawGameCharacter() {
       gameChar.x + 13,
       gameChar.y - 63,
     );
-
     //shoulder right
     fill(193, 154, 107);
     ellipse(gameChar.x + 5, gameChar.y - 45, 7, 7);
@@ -773,7 +776,6 @@ function drawGameCharacter() {
     noStroke();
     fill(60);
     rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
-
     fill(0);
     ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
     ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
@@ -783,7 +785,6 @@ function drawGameCharacter() {
     //
     fill(237, 201, 175);
     ellipse(gameChar.x, gameChar.y - 60, 20, 20);
-
     // legs
     fill(140, 120, 90);
     quad(
@@ -806,7 +807,6 @@ function drawGameCharacter() {
       gameChar.x - 7,
       gameChar.y,
     );
-
     // arm right
     fill(210, 170, 120);
     quad(
@@ -819,15 +819,12 @@ function drawGameCharacter() {
       gameChar.x + 22,
       gameChar.y - 57,
     );
-
     // shoulder right
     fill(193, 154, 107);
     ellipse(gameChar.x + 9, gameChar.y - 42, 7, 7);
-
     // torso
     fill(180, 120, 60);
     rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
-
     // arm left
     fill(210, 170, 120);
     quad(
@@ -840,11 +837,9 @@ function drawGameCharacter() {
       gameChar.x - 13,
       gameChar.y - 63,
     );
-
     // shoulder left
     fill(193, 154, 107);
     ellipse(gameChar.x - 5, gameChar.y - 45, 7, 7);
-
     // glasses
     stroke(100);
     line(gameChar.x - 9, gameChar.y - 61, gameChar.x + 10, gameChar.y - 61);
@@ -855,7 +850,6 @@ function drawGameCharacter() {
     noStroke();
     fill(60);
     rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
-
     fill(0);
     ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
     ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
@@ -904,7 +898,6 @@ function drawGameCharacter() {
     //torso
     fill(180, 120, 60);
     rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
-
     //arms right
     fill(210, 170, 120);
     quad(
@@ -917,7 +910,6 @@ function drawGameCharacter() {
       gameChar.x + 13,
       gameChar.y - 27,
     );
-
     //shoulder right
     fill(193, 154, 107);
     ellipse(gameChar.x + 5, gameChar.y - 45, 7, 7);
@@ -931,7 +923,6 @@ function drawGameCharacter() {
     noStroke();
     fill(60);
     rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
-
     fill(0);
     ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
     ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
@@ -939,7 +930,6 @@ function drawGameCharacter() {
     //----------------FACING RIGHT----------------------------------------------------------------
     fill(237, 201, 175);
     ellipse(gameChar.x, gameChar.y - 60, 20, 20);
-
     // legs
     fill(140, 120, 90);
     quad(
@@ -962,7 +952,6 @@ function drawGameCharacter() {
       gameChar.x - 7,
       gameChar.y,
     );
-
     // arm right
     fill(210, 170, 120);
     quad(
@@ -975,15 +964,12 @@ function drawGameCharacter() {
       gameChar.x + 22,
       gameChar.y - 27,
     );
-
     // shoulder right
     fill(193, 154, 107);
     ellipse(gameChar.x + 9, gameChar.y - 42, 7, 7);
-
     // torso
     fill(180, 120, 60);
     rect(gameChar.x - 10, gameChar.y - 50, 20, 30, 10, 10, 90, 90);
-
     // arm left
     fill(210, 170, 120);
     quad(
@@ -996,11 +982,9 @@ function drawGameCharacter() {
       gameChar.x - 13,
       gameChar.y - 27,
     );
-
     // shoulder left
     fill(193, 154, 107);
     ellipse(gameChar.x - 5, gameChar.y - 45, 7, 7);
-
     // glasses
     stroke(100);
     line(gameChar.x - 9, gameChar.y - 61, gameChar.x + 10, gameChar.y - 61);
@@ -1011,7 +995,6 @@ function drawGameCharacter() {
     noStroke();
     fill(60);
     rect(gameChar.x - 18, gameChar.y - 2, 36, 6, 5);
-
     fill(0);
     ellipse(gameChar.x - 10, gameChar.y + 4, 6, 6);
     ellipse(gameChar.x + 10, gameChar.y + 4, 6, 6);
@@ -1117,13 +1100,9 @@ function drawHeart(x, y, size, isFilled) {
   } else {
     fill(30);
   }
-
   noStroke();
-
   ellipse(x - size / 4, y, size / 2, size / 2);
-
   ellipse(x + size / 4, y, size / 2, size / 2);
-
   triangle(x - size / 2, y, x + size / 2, y, x, y + size / 1.2);
 }
 function drawLifeLost() {
