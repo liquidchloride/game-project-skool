@@ -35,9 +35,8 @@ var outpost;
 var tank;
 var scorpionArray;
 var flagpole;
-//in function setup, a friend assisted in setting up for loop for mountainArray. I then did cloudArray,stumpArray and scale,waterBottleArray as well as pitsArray with minimal help and only referred to it but still did it myself
-//gameChar object creation as well as physics mechanics was done with minimal aid from AI
 
+//=======================SETUP=========================================================
 function setup() {
   createCanvas(windowWidth, windowHeight);
   //create array for  10 clouds with randomised y and scale and diffrent starting x
@@ -147,7 +146,7 @@ function setup() {
   scorpionArray.push(new Scorpion(6700, ground.y, 200));
   scorpionArray.push(new Scorpion(7900, ground.y, 200));
 }
-
+//====================================================DRAW===========================================================
 function draw() {
   //for gamestate logic, I did it myself after running into issues with using diffrent variables to indicate each gamestates.Knowledge of states from other module came in handy here
   if (gameState == "START") {
@@ -237,7 +236,7 @@ function draw() {
     drawGameCharacter();
     //=========================================draw SCORPIONS======================================================
     drawScorpions();
-    //=========================================JUMPING MECHANISM===============================
+    //=========================================JUMPING MECHANISM===================================================
     //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
     //gravity and velocity mechanics were done after watching videos of gravity and velocity implementation on 2d side scrolling games, where the concept is the same
     //the troubleshooting for this was done with the help of AI where it simplified and explained it to me
@@ -484,7 +483,7 @@ function drawCacti() {
   for (let i = 0; i < stumpArrayX.length; i++) {
     fill(67, 124, 79);
     rect(
-      stumpArrayX[i] - 10 * stumpScaleArray[i], // changed: 0 → -10
+      stumpArrayX[i] - 10 * stumpScaleArray[i],
       ground.y - 80 * stumpScaleArray[i],
       20 * stumpScaleArray[i],
       80 * stumpScaleArray[i],
@@ -494,7 +493,7 @@ function drawCacti() {
       0,
     );
     rect(
-      stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
+      stumpArrayX[i] - 35 * stumpScaleArray[i],
       ground.y - 45 * stumpScaleArray[i],
       25 * stumpScaleArray[i],
       15 * stumpScaleArray[i],
@@ -504,7 +503,7 @@ function drawCacti() {
       90,
     );
     rect(
-      stumpArrayX[i] - 35 * stumpScaleArray[i], // changed: -25 → -35
+      stumpArrayX[i] - 35 * stumpScaleArray[i],
       ground.y - 90 * stumpScaleArray[i],
       15 * stumpScaleArray[i],
       45 * stumpScaleArray[i],
@@ -514,7 +513,7 @@ function drawCacti() {
       0,
     );
     rect(
-      stumpArrayX[i] + 10 * stumpScaleArray[i], // changed: +20 → +10
+      stumpArrayX[i] + 10 * stumpScaleArray[i],
       ground.y - 60 * stumpScaleArray[i],
       20 * stumpScaleArray[i],
       15 * stumpScaleArray[i],
@@ -524,7 +523,7 @@ function drawCacti() {
       0,
     );
     rect(
-      stumpArrayX[i] + 15 * stumpScaleArray[i], // changed: +25 → +15
+      stumpArrayX[i] + 15 * stumpScaleArray[i],
       ground.y - 100 * stumpScaleArray[i],
       15 * stumpScaleArray[i],
       50 * stumpScaleArray[i],
@@ -1153,7 +1152,6 @@ function drawLifeLost() {
 }
 function drawEndGoal() {
   push();
-  //====================TENT====================
   //tent body
   noStroke();
   fill(190, 150, 95);
@@ -1178,7 +1176,6 @@ function drawEndGoal() {
   //tent centre line
   stroke(140, 100, 65);
   line(outpost.x, outpost.y - 90, outpost.x, outpost.y - 75);
-  //====================CARGO BOXES====================
   //bottom box
   fill(145, 100, 55);
   stroke(95, 65, 35);
@@ -1193,7 +1190,6 @@ function drawEndGoal() {
   //X on top box
   line(outpost.x - 120, outpost.y - 58, outpost.x - 80, outpost.y - 30);
   line(outpost.x - 80, outpost.y - 58, outpost.x - 120, outpost.y - 30);
-  //====================TABLE====================
   noStroke();
   fill(115, 75, 40);
   //table top
@@ -1201,7 +1197,6 @@ function drawEndGoal() {
   //table legs
   rect(outpost.x + 45, outpost.y - 32, 5, 32);
   rect(outpost.x + 75, outpost.y - 32, 5, 32);
-  //====================RADIO====================
   fill(65);
   rect(outpost.x + 51, outpost.y - 55, 25, 17, 2);
   //speaker
@@ -1214,7 +1209,6 @@ function drawEndGoal() {
   stroke(50);
   strokeWeight(2);
   line(outpost.x + 73, outpost.y - 55, outpost.x + 79, outpost.y - 70);
-  //====================WATER TANK STAND====================
   noStroke();
   fill(110, 75, 40);
   //support
@@ -1222,7 +1216,6 @@ function drawEndGoal() {
   //legs
   rect(outpost.x + 106, outpost.y - 24, 5, 24);
   rect(outpost.x + 134, outpost.y - 24, 5, 24);
-  //====================EMPTY WATER TANK====================
   fill(120, 145, 150);
   rect(outpost.x + 105, outpost.y - 80, 35, 50, 5);
   //tank top
@@ -1436,6 +1429,7 @@ function keyPressed() {
       if (!isJumping && !isPlummeting) {
         isJumping = true;
         gameChar.velocity = jumpStrength;
+        jumpSound.play();
       }
     } else if (keyCode == 27) {
       //ESCAPE key=pause the game
