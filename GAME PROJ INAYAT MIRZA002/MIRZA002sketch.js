@@ -427,7 +427,7 @@ function drawClouds() {
   }
 }
 //========================PYRAMIDS========================================================================================
-//3 triangles to replicate a mountain range
+//3 triangles to replicate a pyramid.
 //same as clouds, where previously already done up.
 function drawPyramids() {
   for (let i = 0; i < mountainArray.length; i++) {
@@ -692,7 +692,7 @@ function drawCollectables() {
           gameChar.y - 40,
           waterBottleArray[i].x,
           waterBottleArray[i].y,
-        ) < 25
+        ) < 30
       ) {
         waterBottleArray[i].isFound = true;
         waterBottlesFound++;
@@ -1066,6 +1066,7 @@ function drawGameCharacter() {
   }
 }
 function resetGame() {
+  //one function to reset game
   gameChar.x = 100;
   gameChar.y = ground.y;
   gameChar.velocity = 0;
@@ -1429,7 +1430,6 @@ function keyPressed() {
       if (!isJumping && !isPlummeting) {
         isJumping = true;
         gameChar.velocity = jumpStrength;
-        jumpSound.play();
       }
     } else if (keyCode == 27) {
       //ESCAPE key=pause the game
