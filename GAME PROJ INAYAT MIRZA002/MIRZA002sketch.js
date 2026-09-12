@@ -4,11 +4,9 @@
 */
 //==========================GLOBAL VAR==========================================================
 var gameChar; //no assistance used for declaring global variables
-var cloud;
 var worldWidth;
 var worldHeight;
 var mountainArray;
-var mountain;
 var stumpArrayX;
 var stumpScaleArray;
 var ground;
@@ -17,13 +15,11 @@ var isRight;
 var isPlummeting;
 var gravity;
 var jumpStrength;
-var isJumping = false;
+var isJumping;
 var waterBottleArray;
-var waterBottle;
 var waterBottlesFound;
 var gameState;
 var pitsArray;
-var pits;
 var cloudArray;
 var overPit;
 var cameraPosX;
@@ -42,7 +38,7 @@ function setup() {
   //create array for  10 clouds with randomised y and scale and diffrent starting x
   cloudArray = [];
   for (let i = 0; i < 10; i++) {
-    cloud = {
+    var cloud = {
       pos: {
         x: -200 - random(0, 600),
         y: random(10, 250),
@@ -53,10 +49,10 @@ function setup() {
     };
     cloudArray.push(cloud);
   }
-  //create array for 7 mountian ranges with random offset and scale
+  //create array for pyramids with random offset and scale
   mountainArray = [];
   for (let i = 0; i < 8; i++) {
-    mountain = {
+    var mountain = {
       x: i * 1200 + random(100, 200), //spaced out but still random jitter
       scale: random(2, 3), //random scale
     };
@@ -79,7 +75,7 @@ function setup() {
   //create array for 7 pits
   pitsArray = [];
   for (let i = 1; i < 8; i++) {
-    pits = {
+    var pits = {
       x: random(100, 400) + 1000 * i, //spaced far and scaled with i to prevent overlap
       y: ground.y, //set y position for pits
       width: random(180, 220), //randomise width for pits
@@ -92,13 +88,18 @@ function setup() {
     velocity: 0, //set velocity as 0 when spawn in
     speed: 5, //set game character speed
   };
+  isLeft = false;
+  isRight = false;
+  isJumping = false;
+  isPlummeting = false;
+  overPit = false;
 
   gravity = 0.15; //push character down each frame to replicate gravity
   jumpStrength = -6; //how high game character can jump
   waterBottleArray = [];
   waterBottlesFound = 0;
   for (let i = 1; i < 16; i++) {
-    waterBottle = {
+    var waterBottle = {
       x: 550 * i + random(1, 100), //waterBottle x pos every 600px w random offset
       y: ground.y - 50 - random(1, 50), //waterBottle abit higher than ground and offset
       isFound: false,
