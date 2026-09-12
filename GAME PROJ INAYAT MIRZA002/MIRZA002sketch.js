@@ -58,7 +58,7 @@ function setup() {
     };
     mountainArray.push(mountain);
   }
-  //create array for base of 26 cacti with random offset and sclae
+  //create array for base of cacti with random offset and sclae
   stumpArrayX = [];
   for (let i = 0; i < 28; i++) {
     stumpArrayX.push(i * 400 + random(100, 250));
