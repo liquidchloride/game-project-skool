@@ -32,14 +32,28 @@ var tank;
 var scorpionArray;
 var flagpole;
 var jumpSound;
+var collectSound;
+var deathSound;
+var winSound;
+var gameOverSound;
+var fallingSound;
+var bgmSound;
 
 function preload() {
   jumpSound = loadSound("./sounds/jump.mp3");
+  collectSound = loadSound("./sounds/collect.mp3");
+  deathSound = loadSound("./sounds/deathlives.mp3");
+  winSound = loadSound("./sounds/win.mp3");
+  gameOverSound = loadSound("./sounds/gameover.mp3");
+  fallingSound = loadSound("./sounds/death.mp3");
+  bgmSound = loadSound("./sounds/bgm.mp3");
 }
 //=======================SETUP=========================================================
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  //create array for  10 clouds with randomised y and scale and diffrent starting x
+  fallingSound.amp(0.1);
+  bgmSound.amp(0.5);
+  //create array for  10 clouds with randomised y and scale and diffrent starting
   cloudArray = [];
   for (let i = 0; i < 10; i++) {
     var cloud = {
@@ -255,6 +269,7 @@ function draw() {
           if (gameChar.y > ground.y + 40) {
             isPlummeting = true;
             isJumping = false;
+            fallingSound.play();
           }
         } else {
           gameChar.y = ground.y;
@@ -269,18 +284,24 @@ function draw() {
       if (gameChar.y > ground.y + 40) {
         isPlummeting = true;
         gameChar.velocity = 0;
+        fallingSound.play();
       }
     } else if (!overPit && gameChar.y > ground.y) {
       gameChar.y = ground.y;
     } //game character falling enough=game over
     if (isPlummeting && gameChar.y > windowHeight + 100) {
       lives--;
+      if (fallingSound.isPlaying()) {
+        fallingSound.stop();
+      }
       if (lives > 0) {
         heartLoss.timer = 0;
         gameState = "LIFE LOST";
+        deathSound.play();
       } else {
         gameState = "GAME OVER";
         deathAlpha = 0;
+        gameOverSound.play();
       }
     }
     pop(); //sidescrolling element end
@@ -701,6 +722,7 @@ function drawCollectables() {
       ) {
         waterBottleArray[i].isFound = true;
         waterBottlesFound++;
+        collectSound.play();
       }
     }
   }
@@ -1280,6 +1302,7 @@ function updateFlagpole() {
   if (flagpole.delay >= 60) {
     gameState = "WIN";
     winAlpha = 0;
+    winSound.play();
   }
 }
 function drawWinTank() {
@@ -1404,12 +1427,15 @@ function drawScorpions() {
     scorpionArray[i].draw();
     if (scorpionArray[i].checkContact(gameChar.x, gameChar.y)) {
       lives--;
+
       if (lives > 0) {
         heartLoss.timer = 0;
         gameState = "LIFE LOST";
+        deathSound.play();
       } else {
         gameState = "GAME OVER";
         deathAlpha = 0;
+        gameOverSound.play();
       }
     }
   }
@@ -1420,6 +1446,11 @@ function keyPressed() {
   //START screen and spacebar begins the game
   if (gameState == "START" && keyCode == 32) {
     //spacebar
+    userStartAudio();
+    if (!bgmSound.isPlaying()) {
+      bgmSound.loop(true);
+      bgmSound.play();
+    }
     gameState = "PLAY";
   }
 
@@ -1435,7 +1466,7 @@ function keyPressed() {
       if (!isJumping && !isPlummeting) {
         isJumping = true;
         gameChar.velocity = jumpStrength;
-        jumpSound.play();
+        jumpSound.play(0, 1, 1);
       }
     } else if (keyCode == 27) {
       //ESCAPE key=pause the game
