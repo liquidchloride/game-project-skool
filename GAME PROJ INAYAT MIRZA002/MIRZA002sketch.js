@@ -31,7 +31,11 @@ var outpost;
 var tank;
 var scorpionArray;
 var flagpole;
+var jumpSound;
 
+function preload() {
+  jumpSound = loadSound("./sounds/jump.mp3");
+}
 //=======================SETUP=========================================================
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -58,7 +62,7 @@ function setup() {
     };
     mountainArray.push(mountain);
   }
-  //create array for base of cacti with random offset and sclae
+  //create array for base of 26 cacti with random offset and sclae
   stumpArrayX = [];
   for (let i = 0; i < 28; i++) {
     stumpArrayX.push(i * 400 + random(100, 250));
@@ -1431,6 +1435,7 @@ function keyPressed() {
       if (!isJumping && !isPlummeting) {
         isJumping = true;
         gameChar.velocity = jumpStrength;
+        jumpSound.play();
       }
     } else if (keyCode == 27) {
       //ESCAPE key=pause the game
