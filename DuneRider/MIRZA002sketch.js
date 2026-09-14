@@ -38,6 +38,8 @@ var winSound;
 var gameOverSound;
 var fallingSound;
 var bgmSound;
+var platformArray;
+var onPlatform;
 
 function preload() {
   jumpSound = loadSound("./sounds/jump.mp3");
@@ -111,6 +113,7 @@ function setup() {
   isJumping = false;
   isPlummeting = false;
   overPit = false;
+  onPlatform = false;
 
   gravity = 0.15; //push character down each frame to replicate gravity
   jumpStrength = -6; //how high game character can jump
@@ -164,6 +167,12 @@ function setup() {
   scorpionArray.push(new Scorpion(5700, ground.y, 200));
   scorpionArray.push(new Scorpion(6700, ground.y, 200));
   scorpionArray.push(new Scorpion(7900, ground.y, 200));
+  platformArray = [];
+  platformArray.push(new Platform(1200, ground.y - 80, 150));
+  platformArray.push(new Platform(2400, ground.y - 90, 180));
+  platformArray.push(new Platform(3400, ground.y - 70, 150));
+  platformArray.push(new Platform(5200, ground.y - 100, 180));
+  platformArray.push(new Platform(7000, ground.y - 80, 160));
 }
 //====================================================DRAW===========================================================
 function draw() {
@@ -255,16 +264,19 @@ function draw() {
     drawGameCharacter();
     //=========================================draw SCORPIONS======================================================
     drawScorpions();
+    //=========================================draw PLATFORMS======================================================
+    drawPlatforms();
     //=========================================JUMPING MECHANISM===================================================
     //while jumping, apply gravity to pull down to ground if overPit false, if else overPit true, continue falling
     //gravity and velocity mechanics were done after watching videos of gravity and velocity implementation on 2d side scrolling games, where the concept is the same
     //the troubleshooting for this was done with the help of AI where it simplified and explained it to me
     //the falling into pits and flow into game over state was done with minimal help.
-    if (isJumping || isPlummeting) {
+    if (isJumping || isPlummeting || gameChar.y < ground.y) {
       gameChar.y += gameChar.velocity;
       gameChar.velocity += gravity;
-
-      if (gameChar.y >= ground.y) {
+      var onPlatform = false;
+      checkIfCharacterIsOnAnyPlatforms();
+      if (!onPlatform && gameChar.y >= ground.y) {
         if (overPit) {
           if (gameChar.y > ground.y + 40) {
             isPlummeting = true;
@@ -1336,6 +1348,52 @@ function drawWinTank() {
   ellipse(tank.x, tank.y - tank.height, tank.width, 20);
   pop();
 }
+function drawPlatforms() {
+  for (let i = 0; i < platformArray.length; i++) {
+    platformArray[i].draw();
+  }
+}
+function checkIfCharacterIsOnAnyPlatforms() {
+  var isContact = false;
+  onPlatform = false;
+  //only check platforms when character is falling or standing
+  if (gameChar.velocity >= 0 && gameChar.y < ground.y) {
+    for (let i = 0; i < platformArray.length; i++) {
+      isContact = platformArray[i].checkContact(gameChar.x, gameChar.y);
+      if (isContact) {
+        onPlatform = true;
+        gameChar.y = platformArray[i].y;
+        gameChar.velocity = 0;
+        isJumping = false;
+        break;
+      }
+    }
+  }
+}
+function Platform(x, y, width) {
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = 15;
+  this.draw = function () {
+    stroke(50);
+    strokeWeight(3);
+    fill(210, 170, 105);
+    rect(this.x, this.y, this.width, this.height, 3);
+    noStroke();
+  };
+  this.checkContact = function (gameCharX, gameCharY) {
+    //check x axis
+    if (gameCharX + 20 > this.x && gameCharX < this.x + 20 + this.width) {
+      //check y axis
+      var d = this.y - gameCharY;
+      if (d >= 0 && d < 5) {
+        return true;
+      }
+    }
+    return false;
+  };
+}
 function Scorpion(x, y, range) {
   this.x = x;
   this.y = y;
@@ -1462,9 +1520,16 @@ function keyPressed() {
       //A key=move left
       isLeft = true;
     } else if (keyCode == 87) {
-      //W key=jump up but only if not already jumping or falling
-      if (!isJumping && !isPlummeting) {
+      //W key = jump from ground, platform, or within pit grace distance
+      if (
+        onPlatform ||
+        (!isJumping &&
+          !isPlummeting &&
+          ((gameChar.y >= ground.y && !overPit) ||
+            (overPit && gameChar.y <= ground.y + 40)))
+      ) {
         isJumping = true;
+        onPlatform = false;
         gameChar.velocity = jumpStrength;
         jumpSound.play(0, 1, 1);
       }
